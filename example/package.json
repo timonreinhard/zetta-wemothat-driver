@@ -1,0 +1,15 @@
+{
+  "name": "zetta-starter-driver-example",
+  "version": "0.1.0",
+  "description": "an example for using the starter device",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "zetta": "*"
+  }
+}

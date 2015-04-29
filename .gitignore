@@ -1,0 +1,12 @@
+node_modules/
+example/node_modules/
+example/.registry/*
+example/.registry/medea.lock
+example/.peers/*
+example/.peers/medea.lock
+.registry/*
+.registry/medea.lock
+.peers/*
+.peers/medea.lock
+npm-debug.log
+.DS_Store

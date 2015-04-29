@@ -1,0 +1,22 @@
+{
+  "name": "wemo-light-driver",
+  "version": "0.0.0",
+  "description": "Zetta Wemo Light driver for any platform",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "zetta-device": "*",
+    "zetta-scout": "*"
+  },
+  "directories": {
+    "example": "example"
+  },
+  "keywords": [
+    "zetta",
+    "starter",
+    "any platform"
+  ]
+}

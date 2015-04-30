@@ -25,6 +25,14 @@ zetta()
 
 ## Transitions
 
-##### do(message)
+##### turnOn()
 
-Calls the device's log() function passing the message param.
+Turns the bulb on.
+
+##### turnOff()
+
+Turns the bulb off.
+
+##### dim(level = 0-255)
+
+Turns the bulb on and dims it to the given level.

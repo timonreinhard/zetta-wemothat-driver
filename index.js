@@ -1,5 +1,6 @@
 var Scout = require('zetta-scout');
 var util = require('util');
+var WemoBridge = require('./wemo-bridge');
 var WemoBulb = require('./wemo-bulb');
 
 var SSDP = require('node-ssdp').Client;
@@ -50,11 +51,20 @@ WemoScout.prototype.search = function() {
             for (var key in json.root.device[0]) {
               device[key] = json.root.device[0][key][0];
             }
-            self.getEndDevices(device);
+            getEndDevices(device);
           }
         });
       }
     });
+  }
+
+  var getEndDevices = function(bridge) {
+    var bridge = new WemoBridge(bridge);
+    bridge.getEndDevices(function(err, device){
+      if (device) {
+        this.foundDevice(device);
+      }
+    }.bind(self));
   }
 
   var client = new SSDP();
@@ -66,64 +76,3 @@ WemoScout.prototype.foundDevice = function(device) {
   // TODO: Distinguish devices by capabilities
   this.initDevice('wemo-bulb', WemoBulb, device);
 };
-
-WemoScout.prototype.getEndDevices = function(bridge) {
-  var self = this;
-
-  var parseResponse = function(data) {
-    xml2js.parseString(data, function(err, result) {
-      if (!err) {
-        var list = result['s:Envelope']['s:Body'][0]['u:GetEndDevicesResponse'][0].DeviceLists[0];
-        xml2js.parseString(list, function(err, result2) {
-          if (!err) {
-            var devinfo = result2.DeviceLists.DeviceList[0].DeviceInfos[0].DeviceInfo;
-            if (devinfo) {
-              for (var i = 0; i < devinfo.length; i++) {
-                var device = {
-                  bridge: bridge,
-                  friendlyName: devinfo[i].FriendlyName[0],
-                  deviceId: devinfo[i].DeviceID[0],
-                  currentState: devinfo[i].CurrentState[0],
-                  capabilities: devinfo[i].CapabilityIDs[0].split(',')
-                };
-                self.foundDevice(device);
-              }
-            }
-            var groupinfo = result2.DeviceLists.DeviceList[0].GroupInfos;
-            if (groupinfo) {
-              // console.log('%j', groupinfo);
-            }
-          } else {
-            console.log(err);
-            console.log(data);
-          }
-        });
-      }
-    });
-  };
-
-  var post = http.request({
-    host: bridge.ip,
-    port: bridge.port,
-    path: '/upnp/control/bridge1',
-    method: 'POST',
-    headers: {
-      SOAPACTION: '"urn:Belkin:service:bridge:1#GetEndDevices"',
-      'Content-Type': 'text/xml; charset="utf-8"',
-      Accept: ''
-    }
-  }, function(res) {
-    var data = '';
-    res.setEncoding('utf8');
-    res.on('data', function(chunk) {
-      data += chunk;
-    });
-    res.on('end', function() {
-      parseResponse(data);
-    });
-  });
-  post.write('<?xml version="1.0" encoding="utf-8"?><s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><s:Body>');
-  post.write('<u:GetEndDevices xmlns:u="urn:Belkin:service:bridge:1"><DevUDN>' + bridge.UDN + '</DevUDN><ReqListType>PAIRED_LIST</ReqListType></u:GetEndDevices>');
-  post.write('</s:Body></s:Envelope>');
-  post.end();
-}

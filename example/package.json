@@ -1,7 +1,7 @@
 {
-  "name": "zetta-wemothat-driver-example",
+  "name": "zetta-wemobridge-driver-example",
   "version": "0.1.0",
-  "description": "an example for using the wemothat driver",
+  "description": "an example for using the wemo-bridge driver",
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",

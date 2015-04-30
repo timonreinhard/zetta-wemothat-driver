@@ -1,30 +1,30 @@
-##Zetta Wemo driver for any platform
+# Zetta Wemo Bridge driver for any platform
 
-A *work-in-progress* driver to play with some of those newer Wemo devices.
+A *work-in-progress* driver to play with the Wemo Bridge.
 
-###Install
+## Install
 
 ```
-$ git clone https://github.com/timonreinhard/zetta-wemothat-driver
+$ git clone https://github.com/timonreinhard/zetta-wemo-bridge-driver
 ```
 
-###Usage
+## Usage
 
 ```
 var zetta = require('zetta');
-var Wemo = require('zetta-wemothat-driver');
+var Wemo = require('zetta-wemo-bridge-driver');
 
 zetta()
   .use(Wemo)
   .listen(1337)
 ```
 
-### Hardware
+## Hardware
 
 * any platform
 
-###Transitions
+## Transitions
 
-#####do(message)
+##### do(message)
 
 Calls the device's log() function passing the message param.

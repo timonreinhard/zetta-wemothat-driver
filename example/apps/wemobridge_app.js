@@ -6,7 +6,7 @@ module.exports = function testApp(server) {
 
   server.observe([wemoDeviceQuery], function(wemoDevice){
     setInterval(function(){
-      wemoDevice.call('do', './example/apps/wemothat_app.js is running', function() {});
+      wemoDevice.call('do', './example/apps/wemobridge_app.js is running', function() {});
     }, 1000);
   });
 

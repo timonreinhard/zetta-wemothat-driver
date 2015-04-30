@@ -1,8 +1,6 @@
 var Scout = require('zetta-scout');
 var util = require('util');
-//var Wemo = require('./wemo');
 var WemoBulb = require('./wemo-bulb');
-
 
 var SSDP = require('node-ssdp').Client;
 var request = require('request');
@@ -36,74 +34,37 @@ WemoScout.prototype.initDevice = function(type, Class, device) {
   });
 };
 
-WemoScout.prototype.soapAction = function(device, path, action, body) {
-  var header = ['<?xml version="1.0" encoding="utf-8"?>',
-    '<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">',
-    '<s:Body>'
-  ].join('\n');
-  var footer = ['</s:Body>', '</s:Envelope>'].join('\n');
-
-  var post = http.request({
-    host: device.ip,
-    port: device.port,
-    path: path,
-    method: 'POST',
-    headers: {
-      SOAPACTION: '"' + action + '"',
-      'Content-Type': 'text/xml; charset="utf-8"',
-      Accept: ''
-    }
-  }, function(res) {
-    var data = '';
-    res.setEncoding('utf8');
-    res.on('data', function(chunk) {
-      data += chunk;
-    });
-    res.on('end', function() {
-      console.log(data);
-    });
-  });
-  post.write(header);
-  post.write(body);
-  post.write(footer);
-  post.end();
-};
-
 WemoScout.prototype.search = function() {
   var self = this;
 
   var handleUDPResponse = function(msg, statusCode, rinfo) {
-    if (msg.ST === 'urn:Belkin:service:bridge:1') {
-      request.get(msg.LOCATION, function(err, res, xml) {
-        if (!err) {
-          xml2js.parseString(xml, function(err, json) {
-            if (!err) {
-              var location = url.parse(msg.LOCATION);
-              var device = {
-                ip: location.hostname,
-                port: location.port
-              };
-              for (var key in json.root.device[0]) {
-                device[key] = json.root.device[0][key][0];
-              }
-              self.foundDevice(device);
+    request.get(msg.LOCATION, function(err, res, xml) {
+      if (!err) {
+        xml2js.parseString(xml, function(err, json) {
+          if (!err) {
+            var location = url.parse(msg.LOCATION);
+            var device = {
+              ip: location.hostname,
+              port: location.port
+            };
+            for (var key in json.root.device[0]) {
+              device[key] = json.root.device[0][key][0];
             }
-          });
-        }
-      });
-    }
+            self.getEndDevices(device);
+          }
+        });
+      }
+    });
   }
 
   var client = new SSDP();
   client.on('response', handleUDPResponse);
-  client.search('ssdp:all');
+  client.search('urn:Belkin:service:bridge:1');
 };
 
 WemoScout.prototype.foundDevice = function(device) {
-  if (device.modelName === 'Bridge') {
-
-    this.getEndDevices(device);
-  }
+  // TODO: Distinguish devices by capabilities
+  this.initDevice('wemo-bulb', WemoBulb, device);
 };
 
 WemoScout.prototype.getEndDevices = function(bridge) {
@@ -112,30 +73,25 @@ WemoScout.prototype.getEndDevices = function(bridge) {
   var parseResponse = function(data) {
     xml2js.parseString(data, function(err, result) {
       if (!err) {
-        //console.log("%j",result);
-        var list = result["s:Envelope"]["s:Body"][0]["u:GetEndDevicesResponse"][0].DeviceLists[0];
+        var list = result['s:Envelope']['s:Body'][0]['u:GetEndDevicesResponse'][0].DeviceLists[0];
         xml2js.parseString(list, function(err, result2) {
           if (!err) {
             var devinfo = result2.DeviceLists.DeviceList[0].DeviceInfos[0].DeviceInfo;
             if (devinfo) {
               for (var i = 0; i < devinfo.length; i++) {
                 var device = {
-                  brige: bridge,
+                  bridge: bridge,
                   friendlyName: devinfo[i].FriendlyName[0],
                   deviceID: devinfo[i].DeviceID[0],
-                  currentState: devinfo[i].CurrentState[0]
+                  currentState: devinfo[i].CurrentState[0],
+                  capabilities: devinfo[i].CapabilityIDs[0].split(',')
                 };
-                //devList.push(light);
-                //names[light.name] = light;+
-                //console.log(device);
-                self.initDevice('wemo-bulb', WemoBulb, device);
+                self.foundDevice(device);
               }
             }
             var groupinfo = result2.DeviceLists.DeviceList[0].GroupInfos;
             if (groupinfo) {
-              //group found
-              //console.log('%j', groupinfo);
-              console.log("Groups are currently nots supported");
+              // console.log('%j', groupinfo);
             }
           } else {
             console.log(err);

@@ -1,24 +1,24 @@
 var Scout = require('zetta-scout');
 var util = require('util');
-var WemoLight = require('./wemolight');
+var Wemo = require('./wemo');
 
-var WemoLightScout = module.exports = function() {
+var WemoScout = module.exports = function() {
   Scout.call(this);
 };
-util.inherits(WemoLightScout, Scout);
+util.inherits(WemoScout, Scout);
 
-WemoLightScout.prototype.init = function(next) {
+WemoScout.prototype.init = function(next) {
 
   var self = this;
 
-  var query = this.server.where({type: 'wemolight'});
+  var query = this.server.where({type: 'wemo'});
   var options = {default: 'DEFAULT'};
 
   this.server.find(query, function(err, results) {
     if (results[0]) {
-      self.provision(results[0], WemoLight, options);
+      self.provision(results[0], Wemo, options);
     } else {
-      self.discover(WemoLight, options);
+      self.discover(Wemo, options);
     }
   });
 

@@ -1,16 +1,16 @@
 var Device = require('zetta-device');
 var util = require('util');
 
-var WemoLight = module.exports = function(options) {
+var Wemo = module.exports = function(options) {
   Device.call(this);
   this._default = options['default'];
 };
-util.inherits(WemoLight, Device);
+util.inherits(Wemo, Device);
 
-WemoLight.prototype.init = function(config) {
+Wemo.prototype.init = function(config) {
   config
-  .name('WemoLight')
-  .type('wemolight')
+  .name('Wemo')
+  .type('wemo')
   .state('waiting')
   .when('waiting', { allow: ['do']})
   .when('doing', { allow: [] })
@@ -19,7 +19,7 @@ WemoLight.prototype.init = function(config) {
   ]);
 };
 
-WemoLight.prototype.do = function(message, cb) {
+Wemo.prototype.do = function(message, cb) {
   this.state = 'doing';
   this.log(this._default + ': ' + message);
   this.state = 'waiting';

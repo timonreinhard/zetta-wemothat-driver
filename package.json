@@ -1,7 +1,7 @@
 {
-  "name": "wemo-light-driver",
+  "name": "wemothat-driver",
   "version": "0.0.0",
-  "description": "Zetta Wemo Light driver for any platform",
+  "description": "Zetta Wemo driver for any platform",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

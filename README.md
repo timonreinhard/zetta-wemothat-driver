@@ -1,19 +1,21 @@
-##Zetta Wemo Light driver for any platform
+##Zetta Wemo driver for any platform
+
+A *work-in-progress* driver to play with some of those newer Wemo devices.
 
 ###Install
 
 ```
-$> git clone https://github.com/timonreinhard/zetta-wemolight-driver
+$ git clone https://github.com/timonreinhard/zetta-wemothat-driver
 ```
 
 ###Usage
 
 ```
 var zetta = require('zetta');
-var WemoLight = require('zetta-wemolight-driver');
+var Wemo = require('zetta-wemothat-driver');
 
 zetta()
-  .use(WemoLight)
+  .use(Wemo)
   .listen(1337)
 ```
 
@@ -26,7 +28,3 @@ zetta()
 #####do(message)
 
 Calls the device's log() function passing the message param.
-
-###Design
-
-This device driver is designed to be the starter code for other device drivers.

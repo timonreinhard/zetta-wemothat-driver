@@ -1,6 +1,6 @@
 var zetta = require('zetta');
 var Starter = require('../index');
-var app = require('./apps/wemolight_app');
+var app = require('./apps/wemothat_app');
 
 zetta()
   .use(Starter)

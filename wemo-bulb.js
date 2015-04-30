@@ -5,7 +5,7 @@ var WemoBulb = module.exports = function(device) {
   this.name = device.friendlyName;
   this.state = device.currentState;
   this.bridge = device.bridge;
-  this.deviceID = device.deviceID;
+  this.deviceId = device.deviceId;
   Device.call(this);
 };
 util.inherits(WemoBulb, Device);

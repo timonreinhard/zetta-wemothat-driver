@@ -9,7 +9,13 @@
   "license": "MIT",
   "dependencies": {
     "zetta-device": "*",
-    "zetta-scout": "*"
+    "zetta-scout": "*",
+    "node-ssdp": "~2.2.0",
+    "request": "~2.55.0",
+    "xml2js": "~0.4.8",
+    "url": "~0.10.3",
+    "http": "0.0.0",
+    "util": "~0.10.3"
   },
   "directories": {
     "example": "example"

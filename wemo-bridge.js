@@ -32,6 +32,9 @@ WemoBridge.prototype.post = function(action, body, cb) {
         cb(null, data);
       }
     });
+    res.on('error', function(err) {
+      console.log(err);
+    });
   });
   req.write(soapHeader);
   req.write(body);
@@ -66,13 +69,25 @@ WemoBridge.prototype.getEndDevices = function(cb) {
                 cb(null, device);
               }
             }
-            var groupinfo = result2.DeviceLists.DeviceList[0].GroupInfos;
-            if (groupinfo) {
-              // console.log('%j', groupinfo);
+            var groupinfos = result2.DeviceLists.DeviceList[0].GroupInfos;
+            if (groupinfos) {
+              for (var i = 0; i < groupinfos.length; i++) {
+                var device = {
+                  bridge: {
+                    ip: self.ip,
+                    port: self.port,
+                    UDN: self.UDN
+                  },
+                  friendlyName: groupinfos[i].GroupInfo[0].GroupName[0],
+                  deviceId: groupinfos[i].GroupInfo[0].GroupID[0],
+                  currentState: groupinfos[i].GroupInfo[0].GroupCapabilityValues[0],
+                  capabilities: groupinfos[i].GroupInfo[0].GroupCapabilityIDs[0].split(',')
+                };
+                cb(null, device);
+              }
             }
           } else {
-            console.log(err);
-            console.log(data);
+            console.log(err, data);
           }
         });
       }
@@ -84,12 +99,13 @@ WemoBridge.prototype.getEndDevices = function(cb) {
 }
 
 WemoBridge.prototype.setDeviceStatus = function(deviceId, capability, value) {
+  var isGroupAction = (deviceId.length === 10) ? 'YES' : 'NO';
   var body = [
     '<u:SetDeviceStatus xmlns:u="urn:Belkin:service:bridge:1">',
     '<DeviceStatusList>',
-    '&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&lt;DeviceStatus&gt;&lt;IsGroupAction&gt;NO&lt;/IsGroupAction&gt;&lt;DeviceID available=&quot;YES&quot;&gt;%s&lt;/DeviceID&gt;&lt;CapabilityID&gt;%s&lt;/CapabilityID&gt;&lt;CapabilityValue&gt;%s&lt;/CapabilityValue&gt;&lt;/DeviceStatus&gt;',
+    '&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&lt;DeviceStatus&gt;&lt;IsGroupAction&gt;%s&lt;/IsGroupAction&gt;&lt;DeviceID available=&quot;YES&quot;&gt;%s&lt;/DeviceID&gt;&lt;CapabilityID&gt;%s&lt;/CapabilityID&gt;&lt;CapabilityValue&gt;%s&lt;/CapabilityValue&gt;&lt;/DeviceStatus&gt;',
     '</DeviceStatusList>',
     '</u:SetDeviceStatus>'
   ].join('\n');
-  this.post('SetDeviceStatus', util.format(body, deviceId, capability, value));
+  this.post('SetDeviceStatus', util.format(body, isGroupAction, deviceId, capability, value));
 };

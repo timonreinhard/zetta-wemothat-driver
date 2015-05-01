@@ -94,8 +94,8 @@ WemoBridge.prototype.getEndDevices = function(cb) {
     });
   };
 
-  var body = '<u:GetEndDevices xmlns:u="urn:Belkin:service:bridge:1"><DevUDN>' + this.UDN + '</DevUDN><ReqListType>PAIRED_LIST</ReqListType></u:GetEndDevices>';
-  this.post('GetEndDevices', body, parseResponse);
+  var body = '<u:GetEndDevices xmlns:u="urn:Belkin:service:bridge:1"><DevUDN>%s</DevUDN><ReqListType>PAIRED_LIST</ReqListType></u:GetEndDevices>';
+  this.post('GetEndDevices', util.format(body, this.UDN), parseResponse);
 }
 
 WemoBridge.prototype.setDeviceStatus = function(deviceId, capability, value) {

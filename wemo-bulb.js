@@ -35,6 +35,7 @@ WemoBulb.prototype.init = function(config) {
 };
 
 WemoBulb.prototype.turnOn = function(cb) {
+  // FIXME: This doesn't reset dim level
   this.setDeviceStatus(10006, '1:255');
   this.state = 'on';
   cb();

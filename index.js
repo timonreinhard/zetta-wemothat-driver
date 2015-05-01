@@ -24,7 +24,6 @@ WemoScout.prototype.init = function(next) {
 
 WemoScout.prototype.initDevice = function(type, Class, device) {
   var self = this;
-  console.log(device);
   var query = this.server.where({ type: type, deviceId: device.deviceId });
   this.server.find(query, function(err, results){
     if (results.length > 0) {

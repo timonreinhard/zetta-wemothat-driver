@@ -1,5 +1,5 @@
 var Device = require('zetta-device');
-var WemoBridge = require('./wemo-bridge');
+var BridgeClient = require('./wemo-client/bridgeclient');
 
 var util = require('util');
 
@@ -15,7 +15,7 @@ var WemoBulb = module.exports = function(device) {
   this.internalState = device.currentState;
   this.state = parseState(device.currentState);
   this.deviceId = device.deviceId;
-  this._bridge = new WemoBridge(device.bridge);
+  this._bridge = new BridgeClient(device.bridge);
   Device.call(this);
 };
 util.inherits(WemoBulb, Device);

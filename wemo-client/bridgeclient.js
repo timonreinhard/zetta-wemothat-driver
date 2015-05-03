@@ -1,48 +1,17 @@
+var SoapClient = require('./soapclient');
 var util = require('util');
 var http = require('http');
 var xml2js = require('xml2js');
 
-var WemoBridge = module.exports = function(config) {
-  this.ip = config.ip;
-  this.port = config.port;
-  this.UDN = config.UDN;
+var BridgeClient = module.exports = function(config) {
+  SoapClient.call(this, config);
+  this.path = '/upnp/control/bridge1';
+  this.serviceType = 'urn:Belkin:service:bridge:1';
 };
+util.inherits(BridgeClient, SoapClient);
 
-WemoBridge.prototype.post = function(action, body, cb) {
-  var soapHeader = '<?xml version="1.0" encoding="utf-8"?><s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><s:Body>';
-  var soapFooter = '</s:Body></s:Envelope>';
 
-  var req = http.request({
-    host: this.ip,
-    port: this.port,
-    path: '/upnp/control/bridge1',
-    method: 'POST',
-    headers: {
-      'SOAPACTION': '"urn:Belkin:service:bridge:1#' + action + '"',
-      'Content-Type': 'text/xml; charset="utf-8"'
-    }
-  }, function(res) {
-    var data = '';
-    res.setEncoding('utf8');
-    res.on('data', function(chunk) {
-      data += chunk;
-    });
-    res.on('end', function() {
-      if (cb) {
-        cb(null, data);
-      }
-    });
-    res.on('error', function(err) {
-      console.log(err);
-    });
-  });
-  req.write(soapHeader);
-  req.write(body);
-  req.write(soapFooter);
-  req.end();
-};
-
-WemoBridge.prototype.getEndDevices = function(cb) {
+BridgeClient.prototype.getEndDevices = function(cb) {
   var self = this;
 
   var parseResponse = function(err, data) {
@@ -98,7 +67,7 @@ WemoBridge.prototype.getEndDevices = function(cb) {
   this.post('GetEndDevices', util.format(body, this.UDN), parseResponse);
 }
 
-WemoBridge.prototype.setDeviceStatus = function(deviceId, capability, value) {
+BridgeClient.prototype.setDeviceStatus = function(deviceId, capability, value) {
   var isGroupAction = (deviceId.length === 10) ? 'YES' : 'NO';
   var body = [
     '<u:SetDeviceStatus xmlns:u="urn:Belkin:service:bridge:1">',

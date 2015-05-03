@@ -1,7 +1,7 @@
 var Scout = require('zetta-scout');
 var util = require('util');
-var WemoBridge = require('./wemo-bridge');
-var WemoBulb = require('./wemo-bulb');
+var BridgeClient = require('./wemo-client/bridgeclient');
+var WemoBulb = require('./bulb');
 
 var SSDP = require('node-ssdp').Client;
 var request = require('request');
@@ -58,7 +58,7 @@ WemoScout.prototype.search = function() {
   }
 
   var getEndDevices = function(bridge) {
-    var bridge = new WemoBridge(bridge);
+    var bridge = new BridgeClient(bridge);
     bridge.getEndDevices(function(err, device){
       if (device) {
         this.foundDevice(device);

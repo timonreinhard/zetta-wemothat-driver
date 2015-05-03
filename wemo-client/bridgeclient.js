@@ -3,10 +3,12 @@ var util = require('util');
 var http = require('http');
 var xml2js = require('xml2js');
 
+
 var BridgeClient = module.exports = function(config) {
   SoapClient.call(this, config);
   this.path = '/upnp/control/bridge1';
   this.serviceType = 'urn:Belkin:service:bridge:1';
+  this.sid = null;
 };
 util.inherits(BridgeClient, SoapClient);
 
@@ -77,4 +79,31 @@ BridgeClient.prototype.setDeviceStatus = function(deviceId, capability, value) {
     '</u:SetDeviceStatus>'
   ].join('\n');
   this.post('SetDeviceStatus', util.format(body, isGroupAction, deviceId, capability, value));
+};
+
+BridgeClient.prototype.subscribe = function(callbackUri, cb) {  
+  var options = {
+    host: this.ip,
+    port: this.port,
+    path: '/upnp/event/bridge1',
+    method: 'SUBSCRIBE',
+    headers: {
+      TIMEOUT: 'Second-120'
+    }
+  };
+
+  // Initial subscription, not a renewal
+  if (!this.sid) {
+    console.log("no sid");
+    options.headers.CALLBACK = '<' + callbackUri + '>';
+    options.headers.NT = 'upnp:event';
+  } else {
+    options.headers.SID = this.sid;
+  }
+
+  var req = http.request(options, function(res) {
+    if (res.headers.sid) this.sid = res.headers.sid;
+    setTimeout(this.subscribe.bind(this), 100 * 1000);
+  }.bind(this));
+  req.end();
 };

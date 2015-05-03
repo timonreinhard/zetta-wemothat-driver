@@ -15,7 +15,9 @@
     "xml2js": "~0.4.8",
     "url": "~0.10.3",
     "http": "0.0.0",
-    "util": "~0.10.3"
+    "util": "~0.10.3",
+    "body-parser": "~1.12.3",
+    "express": "~4.12.3"
   },
   "directories": {
     "example": "example"

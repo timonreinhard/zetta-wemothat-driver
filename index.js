@@ -10,6 +10,24 @@ var url = require('url');
 var http = require('http');
 var util = require('util');
 
+var express = require('express');
+var bodyparser = require('body-parser');
+var os = require('os');
+
+function getLocalInterfaceAddress() {
+  var interfaces = os.networkInterfaces();
+  var addresses = [];
+  for (var k in interfaces) {
+    for (var k2 in interfaces[k]) {
+      var address = interfaces[k][k2];
+      if (address.family === 'IPv4' && !address.internal) {
+        addresses.push(address.address);
+      }
+    }
+  }
+  return addresses.shift();
+}
+
 var WemoScout = module.exports = function() {
   Scout.call(this);
 };
@@ -18,8 +36,36 @@ util.inherits(WemoScout, Scout);
 WemoScout.prototype.init = function(next) {
   var self = this;
   this.search();
-  setInterval(this.search.bind(this), 5000);
+  //setInterval(this.search.bind(this), 5000);
+
+  var app = express();
+  app.use(bodyparser.raw({type: 'text/xml'}));
+  app.all('/', function(req, res) {
+  	console.log("HEADERS: %j", req.headers);
+  	//console.log(subscriptions[req.headers.sid].friendlyName);
+  	xml2js.parseString(req.body, function(err, json){
+		  if (err) {
+			  console.log(err);
+		  }
+		  console.log("EVENT: %j" , json);
+      if (json['e:propertyset']['e:property'][0]['StatusChange']) {
+        xml2js.parseString(json['e:propertyset']['e:property'][0]['StatusChange'][0], function (err, xml) {
+          console.log(JSON.stringify(xml, null, 4));
+
+          console.log('DeviceID', xml.StateEvent.DeviceID[0]._);
+          console.log('CapabilityId', xml.StateEvent.CapabilityId[0]);
+          console.log('Value', xml.StateEvent.Value[0]);
+        });
+      }
+    });
+  });
+
+  var server = app.listen(3000);
+
+  console.log('next');
+
   next();
+
 };
 
 WemoScout.prototype.initDevice = function(type, Class, device) {
@@ -59,6 +105,7 @@ WemoScout.prototype.search = function() {
 
   var getEndDevices = function(bridge) {
     var bridge = new BridgeClient(bridge);
+    bridge.subscribe('http://' + getLocalInterfaceAddress() + ':3000');
     bridge.getEndDevices(function(err, device){
       if (device) {
         this.foundDevice(device);

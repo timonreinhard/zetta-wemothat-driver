@@ -12,6 +12,7 @@ var BridgeClient = module.exports = function(config) {
 };
 util.inherits(BridgeClient, SoapClient);
 
+// TODO: Implement callback server and make the bridge emit events
 
 BridgeClient.prototype.getEndDevices = function(cb) {
   var self = this;

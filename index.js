@@ -21,13 +21,13 @@ WemoScout.prototype.init = function(next) {
   this.bridges = {};
   this.search();
   setInterval(this.search.bind(this), 60000);
-  next();
 };
 
 WemoScout.prototype.initDevice = function(type, Class, device, bridge) {
   var self = this;
   var query = this.server.where({ type: type, deviceId: device.deviceId });
   this.server.find(query, function(err, results){
+    // TODO: Pass instance of WemoBridge to device
     if (results.length > 0) {
       self.provision(results[0], Class, device, bridge);
     } else {

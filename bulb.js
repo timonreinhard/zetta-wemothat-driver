@@ -26,6 +26,7 @@ WemoBulb.prototype.init = function(config) {
     .map('dim', this.dim, [
       { name: 'value', type: 'number'}
     ]);
+    console.log(this);
 };
 
 WemoBulb.prototype.statusChange = function(event) {
@@ -43,13 +44,13 @@ WemoBulb.prototype.updateState = function() {
 WemoBulb.prototype.turnOn = function(cb) {
   // FIXME: This doesn't reset dim level
   this.setDeviceStatus(10006, '1:255');
-  this.state = 'on';
+  //this.state = 'on';
   cb();
 };
 
 WemoBulb.prototype.turnOff = function(cb) {
   this.setDeviceStatus(10006, '0');
-  this.state = 'off';
+  //this.state = 'off';
   cb();
 };
 

@@ -3,19 +3,13 @@ var BridgeClient = require('./wemo-client/bridgeclient');
 
 var util = require('util');
 
-var parseState = function(internalState) {
-  var state = internalState.substr(0, 1);
-  if (state === '1') return 'on';
-  if (state === '0') return 'off';
-  return undefined;
-}
-
-var WemoBulb = module.exports = function(device) {
+var WemoBulb = module.exports = function(device, bridge) {
   this.name = device.friendlyName;
-  this.internalState = device.currentState;
-  this.state = parseState(device.currentState);
+  this.internalState = device.internalState;
+  this.state = (device.internalState['10006'] === '1') ? 'on' : 'off';
   this.deviceId = device.deviceId;
-  this._bridge = new BridgeClient(device.bridge);
+  this._bridge = bridge;
+  this._bridge.on('StatusChange', this.statusChange.bind(this));
   Device.call(this);
 };
 util.inherits(WemoBulb, Device);
@@ -32,6 +26,18 @@ WemoBulb.prototype.init = function(config) {
     .map('dim', this.dim, [
       { name: 'value', type: 'number'}
     ]);
+};
+
+WemoBulb.prototype.statusChange = function(event) {
+  if (event.DeviceId === this.deviceId) {
+    this.internalState[event.CapabilityId] = event.Value;
+    console.log(event, this.deviceId, this.internalState);
+    this.updateState();
+  }
+};
+
+WemoBulb.prototype.updateState = function() {
+  this.state = (this.internalState['10006'] === '1') ? 'on' : 'off';
 };
 
 WemoBulb.prototype.turnOn = function(cb) {

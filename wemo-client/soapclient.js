@@ -1,6 +1,7 @@
 var util = require('util');
 var http = require('http');
 var xml2js = require('xml2js');
+var events = require('events');
 
 var SoapClient = module.exports = function(config) {
   this.ip = config.ip;
@@ -10,6 +11,8 @@ var SoapClient = module.exports = function(config) {
   this.deviceType = config.deviceType;
   this.UDN = config.UDN;
 };
+
+util.inherits(SoapClient, events.EventEmitter);
 
 SoapClient.prototype.post = function(action, body, cb) {
   var soapHeader = '<?xml version="1.0" encoding="utf-8"?><s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><s:Body>';

@@ -38,6 +38,7 @@ WemoScout.prototype.init = function(next) {
   this.search();
   //setInterval(this.search.bind(this), 5000);
 
+  // TODO: Move callback server to wemo-bridge
   var app = express();
   app.use(bodyparser.raw({type: 'text/xml'}));
   app.all('/', function(req, res) {
@@ -72,6 +73,7 @@ WemoScout.prototype.initDevice = function(type, Class, device) {
   var self = this;
   var query = this.server.where({ type: type, deviceId: device.deviceId });
   this.server.find(query, function(err, results){
+    // TODO: Pass instance of WemoBridge to device
     if (results.length > 0) {
       self.provision(results[0], Class, device);
     } else {

@@ -1,4 +1,4 @@
-# Zetta Wemo driver for any platform
+# Zetta driver for Wemo
 
 A driver to play with Wemo devices.
 

@@ -1,7 +1,7 @@
 {
-  "name": "wemo-bridge-driver",
+  "name": "wemothat-driver",
   "version": "0.0.0",
-  "description": "Zetta Wemo Bridge driver for any platform",
+  "description": "Zetta driver for Wemo",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -24,7 +24,6 @@
   },
   "keywords": [
     "zetta",
-    "starter",
-    "any platform"
+    "wemo"
   ]
 }

@@ -1,6 +1,6 @@
 # Zetta Wemo Bridge driver for any platform
 
-A *work-in-progress* driver to play with the Wemo Bridge.
+A driver to play with Wemo Light Bulbs.
 
 ## Install
 

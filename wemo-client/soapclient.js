@@ -1,9 +1,10 @@
 var util = require('util');
 var http = require('http');
 var xml2js = require('xml2js');
-var events = require('events');
+var EventEmitter = require('events').EventEmitter;
 
 var SoapClient = module.exports = function(config) {
+  EventEmitter.call(this);
   this.ip = config.ip;
   this.port = config.port;
   this.path = config.path;
@@ -12,7 +13,7 @@ var SoapClient = module.exports = function(config) {
   this.UDN = config.UDN;
 };
 
-util.inherits(SoapClient, events.EventEmitter);
+util.inherits(SoapClient, EventEmitter);
 
 SoapClient.prototype.post = function(action, body, cb) {
   var soapHeader = '<?xml version="1.0" encoding="utf-8"?><s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><s:Body>';

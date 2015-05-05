@@ -20,7 +20,7 @@ util.inherits(WemoScout, Scout);
 WemoScout.prototype.init = function(next) {
   this.bridges = {};
   this.search();
-  setInterval(this.search.bind(this), 60000);
+  setInterval(this.search.bind(this), 5000);
   next();
 };
 

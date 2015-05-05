@@ -53,9 +53,12 @@ WemoBulb.prototype.turnOff = function(cb) {
 
 WemoBulb.prototype.dim = function(value, cb) {
   // value = brightness:transition time
-  this.setDeviceStatus(10008, (parseInt(value) || 0) + ':25');
-  this.state = (value > 0) ? 'on' : 'off';
-  cb();
+  if (value > 0) {
+    this.setDeviceStatus(10008, (parseInt(value) || 0) + ':25');
+    cb();
+  } else {
+    this.turnOff(cb);
+  }
 };
 
 WemoBulb.prototype.setDeviceStatus = function(capability, value) {

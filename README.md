@@ -1,29 +1,30 @@
-# Zetta Wemo Bridge driver for any platform
+# Zetta Wemo driver for any platform
 
-A *work-in-progress* driver to play with the Wemo Bridge.
+A driver to play with Wemo devices.
+
 
 ## Install
 
 ```
-$ git clone https://github.com/timonreinhard/zetta-wemo-bridge-driver
+$ git clone https://github.com/timonreinhard/zetta-wemothat-driver
 ```
 
 ## Usage
 
 ```
 var zetta = require('zetta');
-var Wemo = require('zetta-wemo-bridge-driver');
+var Wemo = require('zetta-wemothat-driver');
 
 zetta()
   .use(Wemo)
   .listen(1337)
 ```
 
-## Hardware
+## Devices
 
-* any platform
+### Wemo Bulb
 
-## Transitions
+#### Transitions
 
 ##### turnOn()
 

@@ -27,7 +27,6 @@ var BridgeClient = module.exports = function(config) {
   this.path = '/upnp/control/bridge1';
   this.serviceType = 'urn:Belkin:service:bridge:1';
   this.sid = null;
-  console.log(this.ip, this.port);
   this.listener();
 };
 util.inherits(BridgeClient, SoapClient);
@@ -37,12 +36,10 @@ BridgeClient.prototype.listener = function() {
   var app = express();
   app.use(bodyparser.raw({type: 'text/xml'}));
   app.all('/', function(req, res) {
-    console.log("HEADERS: %j", req.headers);
     xml2js.parseString(req.body, function(err, json){
       if (err) {
         console.log(err);
       }
-      console.log("EVENT: %j" , json);
       // TODO: Check / validate req.headers.sid
       if (json['e:propertyset']['e:property'][0]['StatusChange']) {
         xml2js.parseString(json['e:propertyset']['e:property'][0]['StatusChange'][0], function (err, xml) {
@@ -54,12 +51,14 @@ BridgeClient.prototype.listener = function() {
             });
           }
         });
+      } else {
+        console.log('Unhandled Event: %j', json);
       }
     });
     res.sendStatus(200);
   });
 
-  var server = app.listen(8080);
+  var server = app.listen(0);
   var port = server.address().port;
   this.subscribe('http://' + getLocalInterfaceAddress() + ':' + port);
   console.info('Started Bridge callback server on port ' + port);
@@ -152,14 +151,13 @@ BridgeClient.prototype.subscribe = function(callbackUri, cb) {
     }
   };
 
-  // Initial subscription, not a renewal
   if (!this.sid) {
+    // Initial subscription
     options.headers.CALLBACK = '<' + callbackUri + '>';
     options.headers.NT = 'upnp:event';
-    console.log('initial event subscription', options);
   } else {
+    // Subscription renewal
     options.headers.SID = this.sid;
-    console.log('event subscription renewal', options);
   }
 
   var req = http.request(options, function(res) {

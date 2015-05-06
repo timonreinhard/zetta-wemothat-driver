@@ -1,14 +1,12 @@
-var SoapClient = require('./soapclient');
 var util = require('util');
 var http = require('http');
 var xml2js = require('xml2js');
-
-
 var express = require('express');
 var bodyparser = require('body-parser');
 var os = require('os');
+var EventEmitter = require('events').EventEmitter;
 
-function getLocalInterfaceAddress() {
+var getLocalInterfaceAddress = function() {
   var interfaces = os.networkInterfaces();
   var addresses = [];
   for (var k in interfaces) {
@@ -22,49 +20,62 @@ function getLocalInterfaceAddress() {
   return addresses.shift();
 }
 
-var BridgeClient = module.exports = function(config) {
-  SoapClient.call(this, config);
+var WemoClient = module.exports = function(config) {
+  EventEmitter.call(this);
+  this.ip = config.ip;
+  this.port = config.port;
+  this.path = config.path;
+  this.serviceType = undefined;
+  this.deviceType = config.deviceType;
+  this.UDN = config.UDN;
   this.path = '/upnp/control/bridge1';
   this.serviceType = 'urn:Belkin:service:bridge:1';
   this.sid = null;
-  this.listener();
+  this._initNotifications();
 };
-util.inherits(BridgeClient, SoapClient);
+util.inherits(WemoClient, EventEmitter);
 
-BridgeClient.prototype.listener = function() {
-  var self = this;
-  var app = express();
-  app.use(bodyparser.raw({type: 'text/xml'}));
-  app.all('/', function(req, res) {
-    xml2js.parseString(req.body, function(err, json){
-      if (err) {
-        console.log(err);
-      }
-      // TODO: Check / validate req.headers.sid
-      if (json['e:propertyset']['e:property'][0]['StatusChange']) {
-        xml2js.parseString(json['e:propertyset']['e:property'][0]['StatusChange'][0], function (err, xml) {
-          if (!err && xml) {
-            self.emit('StatusChange', {
-              DeviceId: xml.StateEvent.DeviceID[0]._,
-              CapabilityId: xml.StateEvent.CapabilityId[0],
-              Value: xml.StateEvent.Value[0]
-            });
-          }
-        });
-      } else {
-        console.log('Unhandled Event: %j', json);
+WemoClient.prototype.init = function() {
+}
+
+
+WemoClient.prototype.post = function(action, body, cb) {
+  var soapHeader = '<?xml version="1.0" encoding="utf-8"?><s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><s:Body>';
+  var soapFooter = '</s:Body></s:Envelope>';
+
+  var req = http.request({
+    host: this.ip,
+    port: this.port,
+    path: this.path,
+    method: 'POST',
+    headers: {
+      'SOAPACTION': '"' + this.serviceType + '#' + action + '"',
+      'Content-Type': 'text/xml; charset="utf-8"'
+    }
+  }, function(res) {
+    var data = '';
+    res.setEncoding('utf8');
+    res.on('data', function(chunk) {
+      data += chunk;
+    });
+    res.on('end', function() {
+      if (cb) {
+        cb(null, data);
       }
     });
-    res.sendStatus(200);
+    res.on('error', function(err) {
+      console.log(err);
+    });
   });
-
-  var server = app.listen(0);
-  var port = server.address().port;
-  this.subscribe('http://' + getLocalInterfaceAddress() + ':' + port);
-  console.info('Started Bridge callback server on port ' + port);
+  req.write(soapHeader);
+  req.write(body);
+  req.write(soapFooter);
+  req.end();
 };
 
-BridgeClient.prototype.getEndDevices = function(cb) {
+
+
+WemoClient.prototype.getEndDevices = function(cb) {
   var self = this;
 
   var parseResponse = function(err, data) {
@@ -128,7 +139,7 @@ BridgeClient.prototype.getEndDevices = function(cb) {
   this.post('GetEndDevices', util.format(body, this.UDN), parseResponse);
 }
 
-BridgeClient.prototype.setDeviceStatus = function(deviceId, capability, value) {
+WemoClient.prototype.setDeviceStatus = function(deviceId, capability, value) {
   var isGroupAction = (deviceId.length === 10) ? 'YES' : 'NO';
   var body = [
     '<u:SetDeviceStatus xmlns:u="urn:Belkin:service:bridge:1">',
@@ -140,14 +151,14 @@ BridgeClient.prototype.setDeviceStatus = function(deviceId, capability, value) {
   this.post('SetDeviceStatus', util.format(body, isGroupAction, deviceId, capability, value));
 };
 
-BridgeClient.prototype.subscribe = function(callbackUri, cb) {
+WemoClient.prototype.subscribe = function(callbackUri, cb) {
   var options = {
     host: this.ip,
     port: this.port,
     path: '/upnp/event/bridge1',
     method: 'SUBSCRIBE',
     headers: {
-      TIMEOUT: 'Second-120'
+      TIMEOUT: 'Second-130'
     }
   };
 
@@ -162,7 +173,41 @@ BridgeClient.prototype.subscribe = function(callbackUri, cb) {
 
   var req = http.request(options, function(res) {
     if (res.headers.sid) this.sid = res.headers.sid;
-    setTimeout(this.subscribe.bind(this), 100 * 1000, callbackUri);
+    setTimeout(this.subscribe.bind(this), 120 * 1000, callbackUri);
   }.bind(this));
   req.end();
+};
+
+WemoClient.prototype._initNotifications = function() {
+  var self = this;
+  var app = express();
+  app.use(bodyparser.raw({type: 'text/xml'}));
+  app.all('/', function(req, res) {
+    xml2js.parseString(req.body, function(err, json){
+      if (err) {
+        console.log(err);
+      }
+      // TODO: Check / validate req.headers.sid
+      if (json['e:propertyset']['e:property'][0]['StatusChange']) {
+        xml2js.parseString(json['e:propertyset']['e:property'][0]['StatusChange'][0], function (err, xml) {
+          if (!err && xml) {
+            self.emit('StatusChange', {
+              DeviceId: xml.StateEvent.DeviceID[0]._,
+              CapabilityId: xml.StateEvent.CapabilityId[0],
+              Value: xml.StateEvent.Value[0]
+            });
+          }
+        });
+      } else {
+        console.log('Unhandled Event: %j', json);
+      }
+    });
+    res.sendStatus(200);
+  });
+
+  var server = app.listen(0);
+  var port = server.address().port;
+  var host = getLocalInterfaceAddress();
+  this.subscribe('http://' + host + ':' + port);
+  console.info('Started notification server on port ' + port);
 };

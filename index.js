@@ -1,6 +1,6 @@
 var Scout = require('zetta-scout');
 var util = require('util');
-var BridgeClient = require('./wemo-client/bridgeclient');
+var WemoClient = require('./wemo_client');
 var WemoBulb = require('./bulb');
 
 var SSDP = require('node-ssdp').Client;
@@ -54,7 +54,7 @@ WemoScout.prototype.search = function() {
               bridge[key] = json.root.device[0][key][0];
             }
             if (!self.bridges[bridge.UDN]) {
-              self.bridges[bridge.UDN] = new BridgeClient(bridge);
+              self.bridges[bridge.UDN] = new WemoClient(bridge);
               self.bridges[bridge.UDN].getEndDevices(function(err, device){
                 if (device) {
                   self.foundDevice(device, self.bridges[bridge.UDN]);

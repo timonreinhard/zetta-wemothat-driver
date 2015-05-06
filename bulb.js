@@ -1,5 +1,4 @@
 var Device = require('zetta-device');
-var BridgeClient = require('./wemo-client/bridgeclient');
 
 var util = require('util');
 

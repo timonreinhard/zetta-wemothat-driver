@@ -1,6 +1,6 @@
 {
   "name": "wemothat-driver",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Zetta driver for Wemo",
   "main": "index.js",
   "scripts": {

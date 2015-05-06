@@ -31,13 +31,12 @@ var WemoClient = module.exports = function(config) {
   this.path = '/upnp/control/bridge1';
   this.serviceType = 'urn:Belkin:service:bridge:1';
   this.sid = null;
-  this._initNotifications();
 };
 util.inherits(WemoClient, EventEmitter);
 
 WemoClient.prototype.init = function() {
+  this.initNotifications();
 }
-
 
 WemoClient.prototype.post = function(action, body, cb) {
   var soapHeader = '<?xml version="1.0" encoding="utf-8"?><s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><s:Body>';
@@ -89,11 +88,7 @@ WemoClient.prototype.getEndDevices = function(cb) {
             if (devinfo) {
               for (var i = 0; i < devinfo.length; i++) {
                 var device = {
-                  bridge: {
-                    ip: self.ip,
-                    port: self.port,
-                    UDN: self.UDN
-                  },
+                  UDN: self.UDN + '#' + devinfo[i].DeviceID[0],
                   friendlyName: devinfo[i].FriendlyName[0],
                   deviceId: devinfo[i].DeviceID[0],
                   currentState: devinfo[i].CurrentState[0].split(','),
@@ -178,7 +173,7 @@ WemoClient.prototype.subscribe = function(callbackUri, cb) {
   req.end();
 };
 
-WemoClient.prototype._initNotifications = function() {
+WemoClient.prototype.initNotifications = function() {
   var self = this;
   var app = express();
   app.use(bodyparser.raw({type: 'text/xml'}));

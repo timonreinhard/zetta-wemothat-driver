@@ -88,7 +88,6 @@ WemoClient.prototype.getEndDevices = function(cb) {
             if (devinfo) {
               for (var i = 0; i < devinfo.length; i++) {
                 var device = {
-                  UDN: self.UDN + '#' + devinfo[i].DeviceID[0],
                   friendlyName: devinfo[i].FriendlyName[0],
                   deviceId: devinfo[i].DeviceID[0],
                   currentState: devinfo[i].CurrentState[0].split(','),
@@ -105,11 +104,6 @@ WemoClient.prototype.getEndDevices = function(cb) {
             if (groupinfos) {
               for (var i = 0; i < groupinfos.length; i++) {
                 var device = {
-                  bridge: {
-                    ip: self.ip,
-                    port: self.port,
-                    UDN: self.UDN
-                  },
                   friendlyName: groupinfos[i].GroupInfo[0].GroupName[0],
                   deviceId: groupinfos[i].GroupInfo[0].GroupID[0],
                   currentState: groupinfos[i].GroupInfo[0].GroupCapabilityValues[0].split(','),

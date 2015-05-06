@@ -8,6 +8,7 @@ var WemoBulb = module.exports = function(device, bridge) {
   this.state = (device.internalState['10006'].substr(0,1) === '1') ? 'on' : 'off';
   this.brightness = device.internalState['10008'].split(':').shift();
   this.deviceId = device.deviceId;
+  this.UDN = device.UDN + '#' + device.deviceId;
   this._bridge = bridge;
   Device.call(this);
 };

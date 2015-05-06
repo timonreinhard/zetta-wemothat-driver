@@ -22,9 +22,9 @@ WemoScout.prototype.init = function(next) {
 
 WemoScout.prototype.initDevice = function(type, Class, device, bridge) {
   var self = this;
-  var query = this.server.where({ type: type, deviceId: device.deviceId });
+  var query = this.server.where({ type: type, UDN: device.UDN });
   this.server.find(query, function(err, results){
-    if (results.length > 0) {
+    if (results && results.length > 0) {
       self.provision(results[0], Class, device, bridge);
     } else {
       self.discover(Class, device, bridge);

@@ -42,7 +42,7 @@ WemoScout.prototype.search = function() {
           if (!err) {
             var location = url.parse(msg.LOCATION);
             var device = {
-              ip: location.hostname,
+              host: location.hostname,
               port: location.port
             };
             for (var key in json.root.device[0]) {

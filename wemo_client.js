@@ -22,7 +22,7 @@ var getLocalInterfaceAddress = function() {
 
 var WemoClient = module.exports = function(config) {
   EventEmitter.call(this);
-  this.ip = config.ip;
+  this.host = config.host;
   this.port = config.port;
   this.path = config.path;
   this.serviceType = undefined;
@@ -43,7 +43,7 @@ WemoClient.prototype.post = function(action, body, cb) {
   var soapFooter = '</s:Body></s:Envelope>';
 
   var req = http.request({
-    host: this.ip,
+    host: this.host,
     port: this.port,
     path: this.path,
     method: 'POST',
@@ -142,7 +142,7 @@ WemoClient.prototype.setDeviceStatus = function(deviceId, capability, value) {
 
 WemoClient.prototype.subscribe = function(callbackUri, cb) {
   var options = {
-    host: this.ip,
+    host: this.host,
     port: this.port,
     path: '/upnp/event/bridge1',
     method: 'SUBSCRIBE',

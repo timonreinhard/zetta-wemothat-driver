@@ -39,4 +39,4 @@ Turns the bulb on and dims it to the given level.
 
 ## Credits
 
-All credit goes to [Ben Hardill](https://github.com/hardillb) for his [wemo-light.js](https://gist.github.com/hardillb/1279241bb886ee28c05b) gist.
+All credit goes to [Ben Hardill](http://www.hardill.me.uk/wordpress/tag/wemo/) for his research on Belkin's Wemo devices.

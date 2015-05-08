@@ -37,6 +37,25 @@ Turns the bulb off.
 
 Turns the bulb on and dims it to the given level.
 
+### Wemo Insight Switch
+
+#### Streams
+
+##### power
+
+The current power consumption of the device in watts.
+
+#### Transitions
+
+##### turnOn()
+
+Turns the switch on.
+
+##### turnOff()
+
+Turns the switch off.
+
+
 ## Credits
 
 All credit goes to [Ben Hardill](http://www.hardill.me.uk/wordpress/tag/wemo/) for his research on Belkin's Wemo devices.

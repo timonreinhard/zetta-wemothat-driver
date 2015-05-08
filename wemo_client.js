@@ -41,17 +41,16 @@ var WemoClient = module.exports = function(config) {
 
   this.listen();
 
-  if (this.deviceType == 'urn:Belkin:device:bridge:1') {
-    this.subscribe('urn:Belkin:service:bridge:1');
-    //this.subscribe('urn:Belkin:serviceId:basicevent1');
-  }
-
 };
 util.inherits(WemoClient, EventEmitter);
 
 WemoClient.prototype.init = function() {
+  if (this.deviceType == 'urn:Belkin:device:bridge:1') {
+    this.subscribe('urn:Belkin:service:bridge:1');
+  }
 
-}
+  this.subscribe('urn:Belkin:service:basicevent:1');
+};
 
 WemoClient.prototype.soapAction = function(serviceType, action, body, cb) {
   var soapHeader = '<?xml version="1.0" encoding="utf-8"?><s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><s:Body>';
@@ -157,7 +156,21 @@ WemoClient.prototype.setDeviceStatus = function(deviceId, capability, value) {
   this.soapAction('urn:Belkin:service:bridge:1', 'SetDeviceStatus', util.format(body, isGroupAction, deviceId, capability, value));
 };
 
+WemoClient.prototype.setBinaryState = function(value) {
+  var body = [
+    '<u:SetBinaryState xmlns:u="urn:Belkin:service:basicevent:1">',
+    '<BinaryState>%s</BinaryState>',
+    '</u:SetBinaryState>'
+  ].join('\n');
+  this.soapAction('urn:Belkin:service:basicevent:1', 'SetBinaryState', util.format(body, value));
+};
+
 WemoClient.prototype.subscribe = function(serviceType) {
+  if (!this.services[serviceType]) {
+    console.warn('Service %s not supported by %s', serviceType, this.UDN);
+    return;
+  }
+
   var options = {
     host: this.host,
     port: this.port,
@@ -205,8 +218,11 @@ WemoClient.prototype.listen = function() {
             });
           }
         });
+      } else if (json['e:propertyset']['e:property'][0]['BinaryState']) {
+        self.emit('BinaryState', json['e:propertyset']['e:property'][0]['BinaryState'][0]);
       } else {
         console.log('Unhandled Event: %j', json);
+        console.log(json['e:propertyset']['e:property'][0]);
       }
     });
     res.sendStatus(200);

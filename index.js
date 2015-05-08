@@ -7,6 +7,7 @@ var url = require('url');
 
 var WemoClient = require('./wemo_client');
 var WemoBulb = require('./bulb');
+var WemoInsight = require('./insight');
 
 var WemoScout = module.exports = function() {
   Scout.call(this);
@@ -75,9 +76,11 @@ WemoScout.prototype.foundDevice = function(device) {
         }
       }.bind(this));
       break;
+    case 'urn:Belkin:device:insight:1':
+      this.initDevice('wemo-insight', WemoInsight, device, client);
+      break;
     default:
       this.server.info('Found unsupported Wemo device: ' + device.deviceType, device);
-      return;
   }
   client.init();
 };

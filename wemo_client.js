@@ -27,7 +27,7 @@ var WemoClient = module.exports = function(config) {
   this.path = config.path;
   this.deviceType = config.deviceType;
   this.UDN = config.UDN;
-  this.sid = null;
+  this.sid = {};
   this.callbackURL = null;
 
   // Create map of services
@@ -47,6 +47,10 @@ util.inherits(WemoClient, EventEmitter);
 WemoClient.prototype.init = function() {
   if (this.deviceType == 'urn:Belkin:device:bridge:1') {
     this.subscribe('urn:Belkin:service:bridge:1');
+  }
+
+  if (this.deviceType == 'urn:Belkin:device:insight:1') {
+    this.subscribe('urn:Belkin:service:insight:1');
   }
 
   this.subscribe('urn:Belkin:service:basicevent:1');
@@ -181,17 +185,18 @@ WemoClient.prototype.subscribe = function(serviceType) {
     }
   };
 
-  if (!this.sid) {
+  if (!this.sid[serviceType]) {
     // Initial subscription
     options.headers.CALLBACK = '<' + this.callbackURL + '>';
     options.headers.NT = 'upnp:event';
   } else {
     // Subscription renewal
-    options.headers.SID = this.sid;
+    options.headers.SID = this.sid[serviceType];
   }
 
   var req = http.request(options, function(res) {
-    if (res.headers.sid) this.sid = res.headers.sid;
+    console.log(res.headers, res.body);
+    if (res.headers.sid) this.sid[serviceType] = res.headers.sid;
     setTimeout(this.subscribe.bind(this), 120 * 1000, serviceType);
   }.bind(this));
   req.end();
@@ -220,6 +225,18 @@ WemoClient.prototype.listen = function() {
         });
       } else if (json['e:propertyset']['e:property'][0]['BinaryState']) {
         self.emit('BinaryState', json['e:propertyset']['e:property'][0]['BinaryState'][0]);
+      } else if (json['e:propertyset']['e:property'][0]['InsightParams']) {
+        var params = json['e:propertyset']['e:property'][0]['InsightParams'][0].split('|');
+        //console.log(params);
+        var insightParams = {
+          BinaryState: params[0],
+          ONSince: params[1],
+          OnFor: params[2],
+          TodayONTime: params[3],
+          InstantPower: params[7]
+        };
+        self.emit('InsightParams', insightParams);
+
       } else {
         console.log('Unhandled Event: %j', json);
         console.log(json['e:propertyset']['e:property'][0]);

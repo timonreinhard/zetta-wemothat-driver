@@ -5,6 +5,7 @@ var util = require('util');
 var WemoInsight = module.exports = function(device, client) {
   this.name = device.friendlyName;
   this.state = 'off';
+  this.power = 0;
   this.UDN = device.UDN;
   this._client = client;
   Device.call(this);
@@ -16,6 +17,7 @@ WemoInsight.prototype.init = function(config) {
     .type('wemo-insight')
     .state(this.state)
     .name(this.name)
+    .monitor('power')
     .when('off', { allow: ['turn-on'] })
     .when('on', { allow: ['turn-off'] })
     .when('standby', { allow: ['turn-off'] })
@@ -30,6 +32,15 @@ WemoInsight.prototype.init = function(config) {
     };
     var state = event.split('|').shift();
     this.state = map[state];
+
+    // Reset power value if device goes off
+    if (this.state == 'off') {
+      this.power = 0;
+    }
+  }.bind(this));
+
+  this._client.on('InsightParams', function(event) {
+    this.power = Math.round(event.InstantPower / 1000);
   }.bind(this));
 };
 

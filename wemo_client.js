@@ -27,7 +27,7 @@ var WemoClient = module.exports = function(config) {
   this.path = config.path;
   this.deviceType = config.deviceType;
   this.UDN = config.UDN;
-  this.sid = {};
+  this._sid = {};
   this.callbackURL = null;
 
   // Create map of services
@@ -185,17 +185,17 @@ WemoClient.prototype.subscribe = function(serviceType) {
     }
   };
 
-  if (!this.sid[serviceType]) {
+  if (!this._sid[serviceType]) {
     // Initial subscription
     options.headers.CALLBACK = '<' + this.callbackURL + '>';
     options.headers.NT = 'upnp:event';
   } else {
     // Subscription renewal
-    options.headers.SID = this.sid[serviceType];
+    options.headers.SID = this._sid[serviceType];
   }
 
   var req = http.request(options, function(res) {
-    if (res.headers.sid) this.sid[serviceType] = res.headers.sid;
+    if (res.headers._sid) this._sid[serviceType] = res.headers.sid;
     setTimeout(this.subscribe.bind(this), 120 * 1000, serviceType);
   }.bind(this));
   req.end();

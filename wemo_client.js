@@ -25,33 +25,50 @@ var WemoClient = module.exports = function(config) {
   this.host = config.host;
   this.port = config.port;
   this.path = config.path;
-  this.serviceType = undefined;
   this.deviceType = config.deviceType;
   this.UDN = config.UDN;
-  this.path = '/upnp/control/bridge1';
-  this.serviceType = 'urn:Belkin:service:bridge:1';
   this.sid = null;
+  this.callbackURL = null;
+
+  // Create map of services
+  config.serviceList.service.forEach(function(service){
+    this[service.serviceType[0]] = {
+      serviceId: service.serviceId[0],
+      controlURL: service.controlURL[0],
+      eventSubURL: service.eventSubURL[0],
+    }
+  }, this.services = {});
+
+  this.listen();
+
+  if (this.deviceType == 'urn:Belkin:device:bridge:1') {
+    this.subscribe('urn:Belkin:service:bridge:1');
+    //this.subscribe('urn:Belkin:serviceId:basicevent1');
+  }
+
 };
 util.inherits(WemoClient, EventEmitter);
 
 WemoClient.prototype.init = function() {
-  this.initNotifications();
+
 }
 
-WemoClient.prototype.post = function(action, body, cb) {
+WemoClient.prototype.soapAction = function(serviceType, action, body, cb) {
   var soapHeader = '<?xml version="1.0" encoding="utf-8"?><s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><s:Body>';
   var soapFooter = '</s:Body></s:Envelope>';
 
-  var req = http.request({
+  var options = {
     host: this.host,
     port: this.port,
-    path: this.path,
+    path: this.services[serviceType].controlURL,
     method: 'POST',
     headers: {
-      'SOAPACTION': '"' + this.serviceType + '#' + action + '"',
+      'SOAPACTION': '"' + serviceType + '#' + action + '"',
       'Content-Type': 'text/xml; charset="utf-8"'
     }
-  }, function(res) {
+  };
+
+  var req = http.request(options, function(res) {
     var data = '';
     res.setEncoding('utf8');
     res.on('data', function(chunk) {
@@ -125,7 +142,7 @@ WemoClient.prototype.getEndDevices = function(cb) {
   };
 
   var body = '<u:GetEndDevices xmlns:u="urn:Belkin:service:bridge:1"><DevUDN>%s</DevUDN><ReqListType>PAIRED_LIST</ReqListType></u:GetEndDevices>';
-  this.post('GetEndDevices', util.format(body, this.UDN), parseResponse);
+  this.soapAction('urn:Belkin:service:bridge:1', 'GetEndDevices', util.format(body, this.UDN), parseResponse);
 }
 
 WemoClient.prototype.setDeviceStatus = function(deviceId, capability, value) {
@@ -137,14 +154,14 @@ WemoClient.prototype.setDeviceStatus = function(deviceId, capability, value) {
     '</DeviceStatusList>',
     '</u:SetDeviceStatus>'
   ].join('\n');
-  this.post('SetDeviceStatus', util.format(body, isGroupAction, deviceId, capability, value));
+  this.soapAction('urn:Belkin:service:bridge:1', 'SetDeviceStatus', util.format(body, isGroupAction, deviceId, capability, value));
 };
 
-WemoClient.prototype.subscribe = function(callbackUri, cb) {
+WemoClient.prototype.subscribe = function(serviceType) {
   var options = {
     host: this.host,
     port: this.port,
-    path: '/upnp/event/bridge1',
+    path: this.services[serviceType].eventSubURL,
     method: 'SUBSCRIBE',
     headers: {
       TIMEOUT: 'Second-130'
@@ -153,7 +170,7 @@ WemoClient.prototype.subscribe = function(callbackUri, cb) {
 
   if (!this.sid) {
     // Initial subscription
-    options.headers.CALLBACK = '<' + callbackUri + '>';
+    options.headers.CALLBACK = '<' + this.callbackURL + '>';
     options.headers.NT = 'upnp:event';
   } else {
     // Subscription renewal
@@ -162,12 +179,13 @@ WemoClient.prototype.subscribe = function(callbackUri, cb) {
 
   var req = http.request(options, function(res) {
     if (res.headers.sid) this.sid = res.headers.sid;
-    setTimeout(this.subscribe.bind(this), 120 * 1000, callbackUri);
+    setTimeout(this.subscribe.bind(this), 120 * 1000, serviceType);
   }.bind(this));
   req.end();
+
 };
 
-WemoClient.prototype.initNotifications = function() {
+WemoClient.prototype.listen = function() {
   var self = this;
   var app = express();
   app.use(bodyparser.raw({type: 'text/xml'}));
@@ -197,6 +215,6 @@ WemoClient.prototype.initNotifications = function() {
   var server = app.listen(0);
   var port = server.address().port;
   var host = getLocalInterfaceAddress();
-  this.subscribe('http://' + host + ':' + port);
-  console.info('Started notification server on port ' + port);
+  this.callbackURL = 'http://' + host + ':' + port;
+  console.info('Started notification server on port %s for device %s', port, this.deviceType);
 };

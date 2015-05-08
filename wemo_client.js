@@ -195,7 +195,6 @@ WemoClient.prototype.subscribe = function(serviceType) {
   }
 
   var req = http.request(options, function(res) {
-    console.log(res.headers, res.body);
     if (res.headers.sid) this.sid[serviceType] = res.headers.sid;
     setTimeout(this.subscribe.bind(this), 120 * 1000, serviceType);
   }.bind(this));

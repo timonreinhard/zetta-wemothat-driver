@@ -22,37 +22,56 @@ var getLocalInterfaceAddress = function() {
 
 var WemoClient = module.exports = function(config) {
   EventEmitter.call(this);
-  this.ip = config.ip;
+  this.host = config.host;
   this.port = config.port;
   this.path = config.path;
-  this.serviceType = undefined;
   this.deviceType = config.deviceType;
   this.UDN = config.UDN;
-  this.path = '/upnp/control/bridge1';
-  this.serviceType = 'urn:Belkin:service:bridge:1';
-  this.sid = null;
-  this._initNotifications();
+  this.sid = {};
+  this.callbackURL = null;
+
+  // Create map of services
+  config.serviceList.service.forEach(function(service){
+    this[service.serviceType[0]] = {
+      serviceId: service.serviceId[0],
+      controlURL: service.controlURL[0],
+      eventSubURL: service.eventSubURL[0],
+    }
+  }, this.services = {});
+
+  this.listen();
+
 };
 util.inherits(WemoClient, EventEmitter);
 
 WemoClient.prototype.init = function() {
-}
+  if (this.deviceType == 'urn:Belkin:device:bridge:1') {
+    this.subscribe('urn:Belkin:service:bridge:1');
+  }
 
+  if (this.deviceType == 'urn:Belkin:device:insight:1') {
+    this.subscribe('urn:Belkin:service:insight:1');
+  }
 
-WemoClient.prototype.post = function(action, body, cb) {
+  this.subscribe('urn:Belkin:service:basicevent:1');
+};
+
+WemoClient.prototype.soapAction = function(serviceType, action, body, cb) {
   var soapHeader = '<?xml version="1.0" encoding="utf-8"?><s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><s:Body>';
   var soapFooter = '</s:Body></s:Envelope>';
 
-  var req = http.request({
-    host: this.ip,
+  var options = {
+    host: this.host,
     port: this.port,
-    path: this.path,
+    path: this.services[serviceType].controlURL,
     method: 'POST',
     headers: {
-      'SOAPACTION': '"' + this.serviceType + '#' + action + '"',
+      'SOAPACTION': '"' + serviceType + '#' + action + '"',
       'Content-Type': 'text/xml; charset="utf-8"'
     }
-  }, function(res) {
+  };
+
+  var req = http.request(options, function(res) {
     var data = '';
     res.setEncoding('utf8');
     res.on('data', function(chunk) {
@@ -89,11 +108,6 @@ WemoClient.prototype.getEndDevices = function(cb) {
             if (devinfo) {
               for (var i = 0; i < devinfo.length; i++) {
                 var device = {
-                  bridge: {
-                    ip: self.ip,
-                    port: self.port,
-                    UDN: self.UDN
-                  },
                   friendlyName: devinfo[i].FriendlyName[0],
                   deviceId: devinfo[i].DeviceID[0],
                   currentState: devinfo[i].CurrentState[0].split(','),
@@ -110,11 +124,6 @@ WemoClient.prototype.getEndDevices = function(cb) {
             if (groupinfos) {
               for (var i = 0; i < groupinfos.length; i++) {
                 var device = {
-                  bridge: {
-                    ip: self.ip,
-                    port: self.port,
-                    UDN: self.UDN
-                  },
                   friendlyName: groupinfos[i].GroupInfo[0].GroupName[0],
                   deviceId: groupinfos[i].GroupInfo[0].GroupID[0],
                   currentState: groupinfos[i].GroupInfo[0].GroupCapabilityValues[0].split(','),
@@ -136,7 +145,7 @@ WemoClient.prototype.getEndDevices = function(cb) {
   };
 
   var body = '<u:GetEndDevices xmlns:u="urn:Belkin:service:bridge:1"><DevUDN>%s</DevUDN><ReqListType>PAIRED_LIST</ReqListType></u:GetEndDevices>';
-  this.post('GetEndDevices', util.format(body, this.UDN), parseResponse);
+  this.soapAction('urn:Belkin:service:bridge:1', 'GetEndDevices', util.format(body, this.UDN), parseResponse);
 }
 
 WemoClient.prototype.setDeviceStatus = function(deviceId, capability, value) {
@@ -148,37 +157,53 @@ WemoClient.prototype.setDeviceStatus = function(deviceId, capability, value) {
     '</DeviceStatusList>',
     '</u:SetDeviceStatus>'
   ].join('\n');
-  this.post('SetDeviceStatus', util.format(body, isGroupAction, deviceId, capability, value));
+  this.soapAction('urn:Belkin:service:bridge:1', 'SetDeviceStatus', util.format(body, isGroupAction, deviceId, capability, value));
 };
 
-WemoClient.prototype.subscribe = function(callbackUri, cb) {
+WemoClient.prototype.setBinaryState = function(value) {
+  var body = [
+    '<u:SetBinaryState xmlns:u="urn:Belkin:service:basicevent:1">',
+    '<BinaryState>%s</BinaryState>',
+    '</u:SetBinaryState>'
+  ].join('\n');
+  this.soapAction('urn:Belkin:service:basicevent:1', 'SetBinaryState', util.format(body, value));
+};
+
+WemoClient.prototype.subscribe = function(serviceType) {
+  if (!this.services[serviceType]) {
+    console.warn('Service %s not supported by %s', serviceType, this.UDN);
+    return;
+  }
+
   var options = {
-    host: this.ip,
+    host: this.host,
     port: this.port,
-    path: '/upnp/event/bridge1',
+    path: this.services[serviceType].eventSubURL,
     method: 'SUBSCRIBE',
     headers: {
       TIMEOUT: 'Second-130'
     }
   };
 
-  if (!this.sid) {
+  if (!this.sid[serviceType]) {
     // Initial subscription
-    options.headers.CALLBACK = '<' + callbackUri + '>';
+    options.headers.CALLBACK = '<' + this.callbackURL + '>';
     options.headers.NT = 'upnp:event';
   } else {
     // Subscription renewal
-    options.headers.SID = this.sid;
+    options.headers.SID = this.sid[serviceType];
   }
 
   var req = http.request(options, function(res) {
-    if (res.headers.sid) this.sid = res.headers.sid;
-    setTimeout(this.subscribe.bind(this), 120 * 1000, callbackUri);
+    console.log(res.headers, res.body);
+    if (res.headers.sid) this.sid[serviceType] = res.headers.sid;
+    setTimeout(this.subscribe.bind(this), 120 * 1000, serviceType);
   }.bind(this));
   req.end();
+
 };
 
-WemoClient.prototype._initNotifications = function() {
+WemoClient.prototype.listen = function() {
   var self = this;
   var app = express();
   app.use(bodyparser.raw({type: 'text/xml'}));
@@ -198,8 +223,23 @@ WemoClient.prototype._initNotifications = function() {
             });
           }
         });
+      } else if (json['e:propertyset']['e:property'][0]['BinaryState']) {
+        self.emit('BinaryState', json['e:propertyset']['e:property'][0]['BinaryState'][0]);
+      } else if (json['e:propertyset']['e:property'][0]['InsightParams']) {
+        var params = json['e:propertyset']['e:property'][0]['InsightParams'][0].split('|');
+        //console.log(params);
+        var insightParams = {
+          BinaryState: params[0],
+          ONSince: params[1],
+          OnFor: params[2],
+          TodayONTime: params[3],
+          InstantPower: params[7]
+        };
+        self.emit('InsightParams', insightParams);
+
       } else {
         console.log('Unhandled Event: %j', json);
+        console.log(json['e:propertyset']['e:property'][0]);
       }
     });
     res.sendStatus(200);
@@ -208,6 +248,6 @@ WemoClient.prototype._initNotifications = function() {
   var server = app.listen(0);
   var port = server.address().port;
   var host = getLocalInterfaceAddress();
-  this.subscribe('http://' + host + ':' + port);
-  console.info('Started notification server on port ' + port);
+  this.callbackURL = 'http://' + host + ':' + port;
+  console.info('Started notification server on port %s for device %s', port, this.deviceType);
 };

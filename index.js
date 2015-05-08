@@ -1,16 +1,13 @@
 var Scout = require('zetta-scout');
 var util = require('util');
-var WemoClient = require('./wemo_client');
-var WemoBulb = require('./bulb');
-
-var SSDP = require('node-ssdp').Client;
+var SSDPClient = require('node-ssdp').Client;
 var request = require('request');
 var xml2js = require('xml2js');
 var url = require('url');
-var http = require('http');
-var util = require('util');
 
-
+var WemoClient = require('./wemo_client');
+var WemoBulb = require('./bulb');
+var WemoInsight = require('./insight');
 
 var WemoScout = module.exports = function() {
   Scout.call(this);
@@ -18,7 +15,7 @@ var WemoScout = module.exports = function() {
 util.inherits(WemoScout, Scout);
 
 WemoScout.prototype.init = function(next) {
-  this.bridges = {};
+  this.clients = {};
   this.search();
   setInterval(this.search.bind(this), 5000);
   next();
@@ -26,10 +23,9 @@ WemoScout.prototype.init = function(next) {
 
 WemoScout.prototype.initDevice = function(type, Class, device, bridge) {
   var self = this;
-  var query = this.server.where({ type: type, deviceId: device.deviceId });
+  var query = this.server.where({ type: type, UDN: device.UDN });
   this.server.find(query, function(err, results){
-    // TODO: Pass instance of WemoBridge to device
-    if (results.length > 0) {
+    if (results && results.length > 0) {
       self.provision(results[0], Class, device, bridge);
     } else {
       self.discover(Class, device, bridge);
@@ -46,33 +42,45 @@ WemoScout.prototype.search = function() {
         xml2js.parseString(xml, function(err, json) {
           if (!err) {
             var location = url.parse(msg.LOCATION);
-            var bridge = {
-              ip: location.hostname,
+            var device = {
+              host: location.hostname,
               port: location.port
             };
             for (var key in json.root.device[0]) {
-              bridge[key] = json.root.device[0][key][0];
+              device[key] = json.root.device[0][key][0];
             }
-            if (!self.bridges[bridge.UDN]) {
-              self.bridges[bridge.UDN] = new WemoClient(bridge);
-              self.bridges[bridge.UDN].getEndDevices(function(err, device){
-                if (device) {
-                  self.foundDevice(device, self.bridges[bridge.UDN]);
-                }
-              }.bind(self));
-            }
+            self.foundDevice(device);
           }
         });
       }
     });
   }
 
-  var client = new SSDP();
-  client.on('response', handleUDPResponse);
-  client.search('urn:Belkin:service:bridge:1');
+  var ssdpClient = new SSDPClient();
+  ssdpClient.on('response', handleUDPResponse);
+  ssdpClient.search('urn:Belkin:service:basicevent:1');
 };
 
-WemoScout.prototype.foundDevice = function(device, bridge) {
-  // TODO: Distinguish devices by capabilities
-  this.initDevice('wemo-bulb', WemoBulb, device, bridge);
+WemoScout.prototype.foundDevice = function(device) {
+  if (this.clients[device.UDN]) {
+    // device has already been initialized
+    return;
+  }
+
+  var client = this.clients[device.UDN] = new WemoClient(device);
+  switch (device.deviceType) {
+    case 'urn:Belkin:device:bridge:1':
+      client.getEndDevices(function(err, device){
+        if (!err) {
+          this.initDevice('wemo-bulb', WemoBulb, device, client);
+        }
+      }.bind(this));
+      break;
+    case 'urn:Belkin:device:insight:1':
+      this.initDevice('wemo-insight', WemoInsight, device, client);
+      break;
+    default:
+      this.server.info('Found unsupported Wemo device: ' + device.deviceType, device);
+  }
+  client.init();
 };

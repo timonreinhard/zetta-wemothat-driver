@@ -1,4 +1,5 @@
 var util = require('util');
+var xml2js = require('xml2js');
 var express = require('express');
 var bodyparser = require('body-parser');
 var os = require('os');
@@ -70,7 +71,7 @@ WemoServer.prototype.getCallbackURL = function() {
   };
 
   if (!this._callbackURL) {
-    var port = this._server.address.port();
+    var port = this._server.address().port;
     var host = getLocalInterfaceAddress();
     this._callbackURL = 'http://' + host + ':' + port;
   }

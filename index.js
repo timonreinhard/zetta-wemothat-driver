@@ -17,7 +17,7 @@ util.inherits(WemoScout, Scout);
 
 WemoScout.prototype.init = function(next) {
   this.clients = {};
-  this.server = new WemoServer();
+  this.callbackServer = new WemoServer();
   this.search();
   setInterval(this.search.bind(this), 5000);
   next();
@@ -28,9 +28,9 @@ WemoScout.prototype.initDevice = function(type, Class, device, bridge) {
   var query = this.server.where({ type: type, UDN: device.UDN });
   this.server.find(query, function(err, results){
     if (results && results.length > 0) {
-      self.provision(results[0], Class, device, bridge);
+      self.provision(results[0], Class, device, bridge, self.callbackServer);
     } else {
-      self.discover(Class, device, bridge);
+      self.discover(Class, device, bridge, self.callbackServer);
     }
   });
 };
@@ -47,7 +47,7 @@ WemoScout.prototype.search = function() {
             var device = {
               host: location.hostname,
               port: location.port,
-              callbackURL: self.server.getCallbackURL()
+              callbackURL: self.callbackServer.getCallbackURL()
             };
             for (var key in json.root.device[0]) {
               device[key] = json.root.device[0][key][0];
@@ -75,13 +75,13 @@ WemoScout.prototype.foundDevice = function(device) {
     case 'urn:Belkin:device:bridge:1':
       client.getEndDevices(function(err, device){
         if (!err) {
-          this.initDevice('wemo-bulb', WemoBulb, device, client, server);
+          this.initDevice('wemo-bulb', WemoBulb, device, client);
         }
       }.bind(this));
       client.subscribe('urn:Belkin:service:bridge:1');
       break;
     case 'urn:Belkin:device:insight:1':
-      this.initDevice('wemo-insight', WemoInsight, device, client, server);
+      this.initDevice('wemo-insight', WemoInsight, device, client);
       client.subscribe('urn:Belkin:service:insight:1');
       break;
     default:

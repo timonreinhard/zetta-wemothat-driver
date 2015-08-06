@@ -151,9 +151,11 @@ WemoClient.prototype.subscribe = function(serviceType) {
     }
   };
 
+  var callbackURL = this.callbackURL + '/' + this.UDN;
+
   if (!this.subscriptions[serviceType]) {
     // Initial subscription
-    options.headers.CALLBACK = '<' + this.callbackURL + '>';
+    options.headers.CALLBACK = '<' + callbackURL + '>';
     options.headers.NT = 'upnp:event';
   } else {
     // Subscription renewal

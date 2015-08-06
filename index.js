@@ -83,9 +83,9 @@ WemoScout.prototype.foundDevice = function(device) {
     case 'urn:Belkin:device:insight:1':
       this.initDevice('wemo-insight', WemoInsight, device, client);
       client.subscribe('urn:Belkin:service:insight:1');
+      client.subscribe('urn:Belkin:service:basicevent:1');
       break;
     default:
       this.server.info('Found unsupported Wemo device: ' + device.deviceType, device);
   }
-  client.subscribe('urn:Belkin:service:basicevent:1');
 };

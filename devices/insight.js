@@ -26,12 +26,15 @@ WemoInsight.prototype.init = function(config) {
     .map('turn-off', this.turnOff);
 
   this._server.on('BinaryState', function(event){
+    if (event.UDN !== this.UDN) {
+      return;
+    }
     var map = {
       1: 'on',
       0: 'off',
       8: 'standby'
     };
-    var state = event.split('|').shift();
+    var state = event.BinaryState.split('|').shift();
     this.state = map[state];
 
     // Reset power value if device goes off
@@ -41,6 +44,9 @@ WemoInsight.prototype.init = function(config) {
   }.bind(this));
 
   this._server.on('InsightParams', function(event) {
+    if (event.UDN !== this.UDN) {
+      return;
+    }
     this.power = Math.round(event.InstantPower / 1000);
   }.bind(this));
 };

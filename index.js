@@ -10,6 +10,7 @@ var WemoServer = require('./wemo/server');
 var WemoBulb = require('./devices/bulb');
 var WemoInsight = require('./devices/insight');
 var WemoMotion = require('./devices/motion');
+var WemoSwitch = require('./devices/switch');
 
 var WemoScout = module.exports = function() {
   Scout.call(this);
@@ -88,6 +89,10 @@ WemoScout.prototype.foundDevice = function(device) {
       break;
     case 'urn:Belkin:device:sensor:1':
       this.initDevice('wemo-motion', WemoMotion, device, client);
+      client.subscribe('urn:Belkin:service:basicevent:1');
+      break;
+    case 'urn:Belkin:device:controllee:1':
+      this.initDevice('wemo-switch', WemoSwitch, device, client);
       client.subscribe('urn:Belkin:service:basicevent:1');
       break;
     default:

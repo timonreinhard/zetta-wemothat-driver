@@ -41,6 +41,18 @@ Turns the bulb off.
 
 Turns the bulb on and dims it to the given level.
 
+### Wemo Switch
+
+#### Transitions
+
+##### turnOn()
+
+Turns the switch on.
+
+##### turnOff()
+
+Turns the switch off.
+
 ### Wemo Insight Switch
 
 #### Streams
@@ -58,7 +70,6 @@ Turns the switch on.
 ##### turnOff()
 
 Turns the switch off.
-
 
 ## Credits
 

@@ -15,7 +15,7 @@ WemoServer.prototype.listen = function() {
   var self = this;
   var app = express();
   app.use(bodyparser.raw({type: 'text/xml'}));
-  app.all('/', function(req, res) {
+  app.all('/:udn', function(req, res) {
     xml2js.parseString(req.body, function(err, json){
       if (err) {
         console.log(err);
@@ -31,11 +31,16 @@ WemoServer.prototype.listen = function() {
           }
         });
       } else if (json['e:propertyset']['e:property'][0]['BinaryState']) {
-        self.emit('BinaryState', json['e:propertyset']['e:property'][0]['BinaryState'][0]);
+        var binaryState = {
+          UDN: req.params.udn,
+          BinaryState: json['e:propertyset']['e:property'][0]['BinaryState'][0]
+        }
+        self.emit('BinaryState', binaryState);
       } else if (json['e:propertyset']['e:property'][0]['InsightParams']) {
         var params = json['e:propertyset']['e:property'][0]['InsightParams'][0].split('|');
         //console.log(params);
         var insightParams = {
+          UDN: req.params.udn,
           BinaryState: params[0],
           ONSince: params[1],
           OnFor: params[2],
@@ -43,9 +48,8 @@ WemoServer.prototype.listen = function() {
           InstantPower: params[7]
         };
         self.emit('InsightParams', insightParams);
-
       } else {
-        console.log('Unhandled Event: %j', json);
+        console.log('Unhandled Event (%s): %j', req.params.udn, json);
         console.log(json['e:propertyset']['e:property'][0]);
       }
     });

@@ -21,6 +21,10 @@ zetta()
 
 ## Devices
 
+### Wemo Motion
+
+This sensor emits the states `motion` or `quiet`.
+
 ### Wemo Bulb
 
 #### Transitions
@@ -58,4 +62,4 @@ Turns the switch off.
 
 ## Credits
 
-All credit goes to [Ben Hardill](http://www.hardill.me.uk/wordpress/tag/wemo/) for his research on Belkin's Wemo devices.
+Credit goes to [Ben Hardill](http://www.hardill.me.uk/wordpress/tag/wemo/) for his research on Belkin's Wemo devices.

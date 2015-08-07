@@ -2,6 +2,17 @@
 
 A driver to play with Wemo devices.
 
+## Supported Hardware
+
+  * [x] Wemo Light Bulb
+  * [x] Wemo Insight Switch
+  * [x] Wemo Switch
+  * [x] Wemo Motion
+  * [ ] Wemo Maker
+  * [ ] Osram Lightify TW
+  * [ ] Osram Flex RGBW
+  * [ ] Osram Gardenspot RGB
+
 ## Install
 
 ```
@@ -74,3 +85,7 @@ Turns the switch off.
 ## Credits
 
 Credit goes to [Ben Hardill](http://www.hardill.me.uk/wordpress/tag/wemo/) for his research on Belkin's Wemo devices.
+
+## License
+
+Published under the [MIT License](https://github.com/timonreinhard/zetta-wemothat-driver/blob/master/LICENSE.md).

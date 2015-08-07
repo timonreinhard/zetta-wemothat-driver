@@ -67,6 +67,11 @@ WemoScout.prototype.search = function() {
 };
 
 WemoScout.prototype.foundDevice = function(device) {
+  if (!device.deviceType.match(/^urn:Belkin:device/)) {
+    // search returned something we were not looking for
+    return;
+  }
+
   if (this.clients[device.UDN]) {
     // device has already been initialized
     return;

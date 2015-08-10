@@ -1,14 +1,12 @@
+var util = require('util');
 var Device = require('zetta-device');
 
-var util = require('util');
-
-var WemoInsight = module.exports = function(device, client, server) {
+var WemoInsight = module.exports = function(device, client) {
   this.name = device.friendlyName;
   this.state = 'off';
   this.power = 0;
   this.UDN = device.UDN;
   this._client = client;
-  this._server = server;
   Device.call(this);
 };
 util.inherits(WemoInsight, Device);
@@ -25,17 +23,13 @@ WemoInsight.prototype.init = function(config) {
     .map('turn-on', this.turnOn)
     .map('turn-off', this.turnOff);
 
-  this._server.on('BinaryState', function(event){
-    if (event.UDN !== this.UDN) {
-      return;
-    }
-    var map = {
+  this._client.on('binaryState', function(value){
+    var states = {
       1: 'on',
       0: 'off',
       8: 'standby'
     };
-    var state = event.BinaryState.split('|').shift();
-    this.state = map[state];
+    this.state = states[value];
 
     // Reset power value if device goes off
     if (this.state == 'off') {
@@ -43,11 +37,8 @@ WemoInsight.prototype.init = function(config) {
     }
   }.bind(this));
 
-  this._server.on('InsightParams', function(event) {
-    if (event.UDN !== this.UDN) {
-      return;
-    }
-    this.power = Math.round(event.InstantPower / 1000);
+  this._client.on('insightParams', function(state, power) {
+    this.power = Math.round(power / 1000);
   }.bind(this));
 };
 

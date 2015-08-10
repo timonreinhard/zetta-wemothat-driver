@@ -1,16 +1,14 @@
+var util = require('util');
 var Device = require('zetta-device');
 
-var util = require('util');
-
-var WemoBulb = module.exports = function(device, bridge, server) {
+var WemoBulb = module.exports = function(device, client) {
   this.name = device.friendlyName;
   this._internalState = device.internalState;
   this.state = (device.internalState['10006'].substr(0,1) === '1') ? 'on' : 'off';
   this.brightness = device.internalState['10008'].split(':').shift();
   this.deviceId = device.deviceId;
   this.UDN = device.UDN + '#' + device.deviceId;
-  this._bridge = bridge;
-  this._server = server;
+  this._client = client;
   Device.call(this);
 };
 util.inherits(WemoBulb, Device);
@@ -30,10 +28,9 @@ WemoBulb.prototype.init = function(config) {
     ]);
 
   var self = this;
-  this._server.on('StatusChange', function(event){
-    if (event.DeviceId === self.deviceId) {
-      console.log('StatusChange event: %j', event);
-      self._internalState[event.CapabilityId] = event.Value;
+  this._client.on('statusChange', function(deviceId, capabilityId, value){
+    if (deviceId === self.deviceId) {
+      self._internalState[capabilityId] = value;
       self.brightness = self._internalState['10008'].split(':').shift();
       self.state = (self._internalState['10006'].substr(0,1) === '1') ? 'on' : 'off';
     }
@@ -63,5 +60,5 @@ WemoBulb.prototype.dim = function(value, cb) {
 };
 
 WemoBulb.prototype.setDeviceStatus = function(capability, value) {
-  this._bridge.setDeviceStatus(this.deviceId, capability, value);
+  this._client.setDeviceStatus(this.deviceId, capability, value);
 };

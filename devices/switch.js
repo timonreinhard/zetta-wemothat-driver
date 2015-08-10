@@ -1,13 +1,11 @@
+var util = require('util');
 var Device = require('zetta-device');
 
-var util = require('util');
-
-var WemoSwitch = module.exports = function(device, client, server) {
+var WemoSwitch = module.exports = function(device, client) {
   this.name = device.friendlyName;
   this.state = 'off';
   this.UDN = device.UDN;
   this._client = client;
-  this._server = server;
   Device.call(this);
 };
 util.inherits(WemoSwitch, Device);
@@ -22,11 +20,8 @@ WemoSwitch.prototype.init = function(config) {
     .map('turn-on', this.turnOn)
     .map('turn-off', this.turnOff);
 
-  this._server.on('BinaryState', function(event){
-    if (event.UDN !== this.UDN) {
-      return;
-    }
-    this.state = (event.BinaryState === '1') ? 'on' : 'off';
+  this._client.on('binaryState', function(state){
+    this.state = (state === '1') ? 'on' : 'off';
   }.bind(this));
 };
 

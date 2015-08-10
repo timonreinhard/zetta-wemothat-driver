@@ -1,23 +1,21 @@
 {
   "name": "wemothat-driver",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Zetta driver for Wemo",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/timonreinhard/zetta-wemothat-driver.git"
+  },
+  "author": "Timon Reinhard",
   "license": "MIT",
   "dependencies": {
+    "wemo-client": "^0.1.0",
     "zetta-device": "*",
-    "zetta-scout": "*",
-    "node-ssdp": "~2.2.0",
-    "request": "~2.55.0",
-    "xml2js": "~0.4.8",
-    "url": "~0.10.3",
-    "http": "0.0.0",
-    "util": "~0.10.3",
-    "body-parser": "~1.12.3",
-    "express": "~4.12.3"
+    "zetta-scout": "*"
   },
   "directories": {
     "example": "example"

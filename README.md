@@ -1,6 +1,6 @@
 # Zetta driver for Wemo
 
-A driver to play with Wemo devices.
+A driver based on [wemo-client](https://github.com/timonreinhard/wemo-client) to play with Wemo devices.
 
 ## Supported Hardware
 
@@ -81,10 +81,6 @@ Turns the switch on.
 ##### turnOff()
 
 Turns the switch off.
-
-## Credits
-
-Credit goes to [Ben Hardill](http://www.hardill.me.uk/wordpress/tag/wemo/) for his research on Belkin's Wemo devices.
 
 ## License
 

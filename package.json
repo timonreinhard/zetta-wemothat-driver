@@ -13,7 +13,7 @@
   "author": "Timon Reinhard",
   "license": "MIT",
   "dependencies": {
-    "wemo-client": "^0.1.0",
+    "wemo-client": "^0.1.2",
     "zetta-device": "*",
     "zetta-scout": "*"
   },

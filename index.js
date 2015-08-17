@@ -48,6 +48,7 @@ WemoScout.prototype.foundDevice = function(device) {
     case 'urn:Belkin:device:bridge:1':
       client.getEndDevices(function(err, device){
         if (!err) {
+          device.UDN = client.device.UDN + '#' + device.deviceId; // make it unique
           this.initDevice('wemo-bulb', WemoBulb, device, client);
         }
       }.bind(this));

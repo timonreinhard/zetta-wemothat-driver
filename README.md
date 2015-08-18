@@ -16,7 +16,7 @@ A driver based on [wemo-client](https://github.com/timonreinhard/wemo-client) to
 ## Install
 
 ```
-$ git clone https://github.com/timonreinhard/zetta-wemothat-driver
+$ npm install timonreinhard/zetta-wemothat-driver
 ```
 
 ## Usage

@@ -84,4 +84,4 @@ Turns the switch off.
 
 ## License
 
-Published under the [MIT License](https://github.com/timonreinhard/zetta-wemothat-driver/blob/master/LICENSE.md).
+Published under the [MIT License](https://github.com/timonreinhard/zetta-wemothat-driver/blob/master/LICENSE).

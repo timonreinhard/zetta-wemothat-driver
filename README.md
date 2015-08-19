@@ -1,6 +1,6 @@
 # Zetta driver for Wemo
 
-A driver based on [wemo-client](https://github.com/timonreinhard/wemo-client) to play with Wemo devices.
+Extended Wemo driver for [Zetta](http://www.zettajs.org) that provides broader model support and handles device events.
 
 ## Supported Hardware
 

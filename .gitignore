@@ -1,12 +1,5 @@
-node_modules/
-example/node_modules/
-example/.registry/*
-example/.registry/medea.lock
-example/.peers/*
-example/.peers/medea.lock
-example/.devices/*
-example/.devices/medea.lock
-.registry/*
-.peers/*
-npm-debug.log
-.DS_Store
+node_modules
+.registry
+.peers
+.devices
+*.log

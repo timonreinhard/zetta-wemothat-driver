@@ -46,10 +46,12 @@ WemoScout.prototype.foundDevice = function(device) {
 
   switch (device.deviceType) {
     case 'urn:Belkin:device:bridge:1':
-      client.getEndDevices(function(err, device){
+      client.getEndDevices(function(err, endDevices) {
         if (!err) {
-          device.UDN = client.device.UDN + '#' + device.deviceId; // make it unique
-          this.initDevice('wemo-bulb', WemoBulb, device, client);
+          endDevices.forEach(function(endDevice) {
+            endDevice.UDN = client.device.UDN + '#' + endDevice.deviceId; // make it unique
+            this.initDevice('wemo-bulb', WemoBulb, endDevice, client);
+          }, this);
         }
       }.bind(this));
       break;

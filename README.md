@@ -16,7 +16,7 @@ Extended Wemo driver for [Zetta](http://www.zettajs.org) that provides broader m
 ## Install
 
 ```
-$ npm install timonreinhard/zetta-wemothat-driver
+$ npm install zetta-wemothat-driver
 ```
 
 ## Usage

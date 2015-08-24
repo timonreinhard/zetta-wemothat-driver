@@ -12,6 +12,10 @@
   },
   "author": "Timon Reinhard",
   "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/timonreinhard/zetta-wemothat-driver/issues"
+  },
+  "homepage": "https://github.com/timonreinhard/zetta-wemothat-driver",
   "dependencies": {
     "wemo-client": "^0.2.0",
     "zetta-device": "*",

@@ -2,7 +2,7 @@ var util = require('util');
 var Scout = require('zetta-scout');
 var Wemo = require('wemo-client');
 
-var WemoBulb = require('./devices/bulb');
+var WemoLight = require('./devices/light');
 var WemoInsight = require('./devices/insight');
 var WemoMotion = require('./devices/motion');
 var WemoSwitch = require('./devices/switch');
@@ -22,8 +22,8 @@ WemoScout.prototype.init = function(next) {
 
 WemoScout.prototype.initDevice = function(type, Class, device, client) {
   var self = this;
-  var query = this.server.where({ type: type, UDN: device.UDN });
-  this.server.find(query, function(err, results){
+  var query = this.server.where({type: type, UDN: device.UDN});
+  this.server.find(query, function(err, results) {
     if (results && results.length > 0) {
       self.provision(results[0], Class, device, client);
     } else {
@@ -50,7 +50,7 @@ WemoScout.prototype.foundDevice = function(device) {
         if (!err) {
           endDevices.forEach(function(endDevice) {
             endDevice.UDN = client.device.UDN + '#' + endDevice.deviceId; // make it unique
-            this.initDevice('wemo-bulb', WemoBulb, endDevice, client);
+            this.initDevice('wemo-light', WemoLight, endDevice, client);
           }, this);
         }
       }.bind(this));

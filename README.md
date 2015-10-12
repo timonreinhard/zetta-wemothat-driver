@@ -10,7 +10,7 @@ Extended Wemo driver for [Zetta](http://www.zettajs.org) that provides broader m
   * [x] Wemo Motion
   * [ ] Wemo Maker
   * [ ] Osram Lightify TW
-  * [ ] Osram Flex RGBW
+  * [x] Osram Flex RGBW
   * [ ] Osram Gardenspot RGB
 
 ## Install

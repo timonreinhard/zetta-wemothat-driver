@@ -3,6 +3,7 @@ var Scout = require('zetta-scout');
 var Wemo = require('wemo-client');
 
 var WemoLight = require('./devices/light');
+var WemoColorLight = require('./devices/colorlight');
 var WemoInsight = require('./devices/insight');
 var WemoMotion = require('./devices/motion');
 var WemoSwitch = require('./devices/switch');
@@ -50,7 +51,14 @@ WemoScout.prototype.foundDevice = function(device) {
         if (!err) {
           endDevices.forEach(function(endDevice) {
             endDevice.UDN = client.device.UDN + '#' + endDevice.deviceId; // make it unique
-            this.initDevice('wemo-light', WemoLight, endDevice, client);
+            switch (endDevice.deviceType) {
+              case 'dimmableLight':
+                this.initDevice('wemo-light', WemoLight, endDevice, client);
+                break;
+              case 'colorLight':
+                this.initDevice('wemo-color-light', WemoColorLight, endDevice, client);
+                break;
+            }
           }, this);
         }
       }.bind(this));

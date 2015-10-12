@@ -30,11 +30,15 @@ WemoLight.prototype.init = function(config) {
   var self = this;
   this._client.on('statusChange', function(deviceId, capabilityId, value) {
     if (deviceId === self.deviceId) {
-      self._internalState[capabilityId] = value;
-      self.brightness = self._internalState['10008'].split(':').shift();
-      self.state = (self._internalState['10006'].substr(0,1) === '1') ? 'on' : 'off';
+      self._statusChange(deviceId, capabilityId, value);
     }
   });
+};
+
+WemoLight.prototype._statusChange = function(deviceId, capabilityId, value) {
+  this._internalState[capabilityId] = value;
+  this.brightness = this._internalState['10008'].split(':').shift();
+  this.state = (this._internalState['10006'].substr(0,1) === '1') ? 'on' : 'off';
 };
 
 WemoLight.prototype.turnOn = function(cb) {
@@ -53,7 +57,7 @@ WemoLight.prototype.dim = function(value, cb) {
   // value = brightness:transition time
   if (value > 0) {
     this.setDeviceStatus(10008, (parseInt(value) || 0) + ':25');
-    cb();
+    (this.state !== 'on') ? this.turnOn(cb) : cb();
   } else {
     this.turnOff(cb);
   }

@@ -46,7 +46,7 @@ WemoScout.prototype.foundDevice = function(device) {
   var client = this._clients[device.UDN] = this._wemo.client(device);
 
   switch (device.deviceType) {
-    case 'urn:Belkin:device:bridge:1':
+    case Wemo.DEVICE_TYPE.Bridge:
       client.getEndDevices(function(err, endDevices) {
         if (!err) {
           endDevices.forEach(function(endDevice) {
@@ -63,13 +63,13 @@ WemoScout.prototype.foundDevice = function(device) {
         }
       }.bind(this));
       break;
-    case 'urn:Belkin:device:insight:1':
+    case Wemo.DEVICE_TYPE.Insight:
       this.initDevice('wemo-insight', WemoInsight, device, client);
       break;
-    case 'urn:Belkin:device:sensor:1':
+    case Wemo.DEVICE_TYPE.Motion:
       this.initDevice('wemo-motion', WemoMotion, device, client);
       break;
-    case 'urn:Belkin:device:controllee:1':
+    case Wemo.DEVICE_TYPE.Switch:
       this.initDevice('wemo-switch', WemoSwitch, device, client);
       break;
     default:

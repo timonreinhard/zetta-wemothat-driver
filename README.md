@@ -36,7 +36,7 @@ zetta()
 
 This sensor emits the states `motion` or `quiet`.
 
-### Wemo Bulb
+### Wemo (Color) Light
 
 #### Transitions
 
@@ -50,7 +50,11 @@ Turns the bulb off.
 
 ##### dim(level = 0-255)
 
-Turns the bulb on and dims it to the given level.
+Turns the light on and dims it to the given level.
+
+##### setColor(red = 0-255, green = 0-255, blue = 0-255)
+
+Sets the light to the specified RGB color.
 
 ### Wemo Switch
 

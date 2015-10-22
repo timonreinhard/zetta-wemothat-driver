@@ -1,8 +1,8 @@
 var zetta = require('zetta');
-var Starter = require('../index');
+var Wemo = require('../index');
 var app = require('./apps/wemo_app');
 
 zetta()
-  .use(Starter)
+  .use(Wemo)
   .use(app)
   .listen(1337);

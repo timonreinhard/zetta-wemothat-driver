@@ -3,9 +3,9 @@ var Device = require('zetta-device');
 
 var WemoLight = module.exports = function(device, client) {
   this.name = device.friendlyName;
-  this._internalState = device.internalState;
-  this.state = (device.internalState['10006'].substr(0,1) === '1') ? 'on' : 'off';
-  this.brightness = device.internalState['10008'].split(':').shift();
+  this._internalState = device.capabilities;
+  this.state = (device.capabilities['10006'].substr(0,1) === '1') ? 'on' : 'off';
+  this.brightness = device.capabilities['10008'].split(':').shift();
   this.deviceId = device.deviceId;
   this.UDN = device.UDN;
   this._client = client;

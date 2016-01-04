@@ -55,12 +55,8 @@ WemoLight.prototype.turnOff = function(cb) {
 
 WemoLight.prototype.dim = function(value, cb) {
   // value = brightness:transition time
-  if (value > 0) {
-    this.setDeviceStatus(10008, (parseInt(value) || 0) + ':25');
-    (this.state !== 'on') ? this.turnOn(cb) : cb();
-  } else {
-    this.turnOff(cb);
-  }
+  this.setDeviceStatus(10008, (parseInt(value) || 0) + ':50');
+  cb();
 };
 
 WemoLight.prototype.setDeviceStatus = function(capability, value) {

@@ -22,5 +22,4 @@ WemoColorLight.prototype.init = function(config) {
 
 WemoLight.prototype.setColor = function(red, green, blue, cb) {
   this._client.setLightColor(this.deviceId, red, green, blue);
-  (this.state !== 'on') ? this.turnOn(cb) : cb();
 };

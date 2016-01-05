@@ -20,19 +20,22 @@ WemoSwitch.prototype.init = function(config) {
     .map('turn-on', this.turnOn)
     .map('turn-off', this.turnOff);
 
-  this._client.on('binaryState', function(state){
-    this.state = (state === '1') ? 'on' : 'off';
-  }.bind(this));
+  this._client.on('binaryState', this._binaryStateHandler.bind(this));
+};
+
+WemoSwitch.prototype._binaryStateHandler = function(val) {
+  var state = (val === '1') ? 'on' : 'off';;
+  if (this.state !== state) {
+    this.state = state;
+  }
 };
 
 WemoSwitch.prototype.turnOn = function(cb) {
   this._client.setBinaryState(1);
-  this.state = 'on';
   cb();
 };
 
 WemoSwitch.prototype.turnOff = function(cb) {
   this._client.setBinaryState(0);
-  this.state = 'off';
   cb();
 };

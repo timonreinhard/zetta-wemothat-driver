@@ -1,6 +1,7 @@
 {
   "preset": "google",
   "maximumLineLength": null,
+  "disallowSpacesInsideObjectBrackets": false,
   "requireCurlyBraces": [
     "else",
     "for",

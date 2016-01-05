@@ -11,6 +11,12 @@ var WemoInsight = module.exports = function(device, client) {
 };
 util.inherits(WemoInsight, Device);
 
+WemoInsight.BINARY_STATES = {
+  1: 'on',
+  0: 'off',
+  8: 'standby'
+};
+
 WemoInsight.prototype.init = function(config) {
   config
     .type('wemo-insight')
@@ -23,33 +29,32 @@ WemoInsight.prototype.init = function(config) {
     .map('turn-on', this.turnOn)
     .map('turn-off', this.turnOff);
 
-  this._client.on('binaryState', function(value){
-    var states = {
-      1: 'on',
-      0: 'off',
-      8: 'standby'
-    };
-    this.state = states[value];
+  this._client.on('binaryState', this._binaryStateHandler.bind(this));
+  this._client.on('insightParams', this._insightParamsHandler.bind(this));
+};
 
-    // Reset power value if device goes off
-    if (this.state == 'off') {
-      this.power = 0;
-    }
-  }.bind(this));
+WemoInsight.prototype._binaryStateHandler = function(val) {
+  var state = WemoInsight.BINARY_STATES[val];
+  if (this.state !== state) {
+    this.state = state;
+  }
 
-  this._client.on('insightParams', function(state, power) {
-    this.power = Math.round(power / 1000);
-  }.bind(this));
+  // Reset power value if device goes off
+  if (state == 'off') {
+    this.power = 0;
+  }
+};
+
+WemoInsight.prototype._insightParamsHandler = function(val, power) {
+  this.power = Math.round(power / 1000);
 };
 
 WemoInsight.prototype.turnOn = function(cb) {
   this._client.setBinaryState(1);
-  this.state = 'on';
   cb();
 };
 
 WemoInsight.prototype.turnOff = function(cb) {
   this._client.setBinaryState(0);
-  this.state = 'off';
   cb();
 };

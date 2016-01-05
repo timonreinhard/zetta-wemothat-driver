@@ -17,8 +17,10 @@ WemoMotion.prototype.init = function(config) {
     .monitor('state')
     .name(this.name);
 
-  this._client.on('binaryState', function(state){
-    this.state = (state === '1') ? 'motion' : 'quiet';
+  this._client.on('binaryState', function(val) {
+    var state = (val === '1') ? 'motion' : 'quiet';
+    if (this.state !== state) {
+      this.state = state;
+    }
   }.bind(this));
-
 };

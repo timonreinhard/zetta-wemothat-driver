@@ -3,7 +3,6 @@ var Device = require('zetta-device');
 
 var WemoLight = module.exports = function(device, client) {
   this.name = device.friendlyName;
-  this._internalState = device.capabilities;
   this.state = (device.capabilities['10006'].substr(0,1) === '1') ? 'on' : 'off';
   this.brightness = device.capabilities['10008'].split(':').shift();
   this.deviceId = device.deviceId;
@@ -27,35 +26,36 @@ WemoLight.prototype.init = function(config) {
       {name: 'value', type: 'number'}
     ]);
 
-  var self = this;
   this._client.on('statusChange', function(deviceId, capabilityId, value) {
-    if (deviceId === self.deviceId) {
-      self._statusChange(deviceId, capabilityId, value);
+    if (deviceId === this.deviceId) {
+      this._statusChange(deviceId, capabilityId, value);
     }
-  });
+  }.bind(this));
 };
 
 WemoLight.prototype._statusChange = function(deviceId, capabilityId, value) {
-  this._internalState[capabilityId] = value;
-  this.brightness = this._internalState['10008'].split(':').shift();
-  this.state = (this._internalState['10006'].substr(0,1) === '1') ? 'on' : 'off';
+  if (capabilityId == '10008') {
+    this.brightness = value.split(':').shift();
+  }
+
+  if (capabilityId == '10006') {
+    this.state = (value.split(':').shift() === 1) ? 'on' : 'off';
+  }
 };
 
 WemoLight.prototype.turnOn = function(cb) {
   this.setDeviceStatus(10006, '1');
-  this.state = 'on';
   cb();
 };
 
 WemoLight.prototype.turnOff = function(cb) {
   this.setDeviceStatus(10006, '0');
-  this.state = 'off';
   cb();
 };
 
 WemoLight.prototype.dim = function(value, cb) {
-  // value = brightness:transition time
-  this.setDeviceStatus(10008, (parseInt(value) || 0) + ':50');
+  var brightness = parseInt(value) || 0;
+  this.setDeviceStatus(10008, brightness + ':35');
   cb();
 };
 

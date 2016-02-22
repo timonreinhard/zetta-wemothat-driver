@@ -17,7 +17,7 @@
   },
   "homepage": "https://github.com/timonreinhard/zetta-wemothat-driver",
   "dependencies": {
-    "wemo-client": "^0.6.0",
+    "wemo-client": "*",
     "zetta-device": "*",
     "zetta-scout": "*"
   },

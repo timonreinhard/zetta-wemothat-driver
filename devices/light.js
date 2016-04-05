@@ -18,10 +18,11 @@ WemoLight.prototype.init = function(config) {
     .state(this.state)
     .monitor('brightness')
     .name(this.name)
-    .when('off', {allow: ['turn-on', 'dim']})
-    .when('on', {allow: ['turn-off', 'dim']})
+    .when('off', {allow: ['turn-on', 'toggle', 'dim']})
+    .when('on', {allow: ['turn-off', 'toggle', 'dim']})
     .map('turn-on', this.turnOn)
     .map('turn-off', this.turnOff)
+    .map('toggle', this.toggle)
     .map('dim', this.dim, [
       {name: 'value', type: 'number'}
     ]);
@@ -50,6 +51,11 @@ WemoLight.prototype.turnOn = function(cb) {
 
 WemoLight.prototype.turnOff = function(cb) {
   this.setDeviceStatus(10006, '0');
+  cb();
+};
+
+WemoLight.prototype.toggle = function(cb) {
+  this.setDeviceStatus(10006, (this.state === 'on') ? '0' : '1');
   cb();
 };
 

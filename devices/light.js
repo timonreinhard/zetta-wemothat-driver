@@ -39,7 +39,7 @@ WemoLight.prototype._statusChange = function(deviceId, capabilityId, value) {
   }
 
   if (capabilityId == '10006') {
-    this.state = (value.split(':').shift() === 1) ? 'on' : 'off';
+    this.state = (value.split(':').shift() === '1') ? 'on' : 'off';
   }
 };
 

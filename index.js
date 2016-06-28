@@ -7,6 +7,7 @@ var WemoColorLight = require('./devices/colorlight');
 var WemoInsight = require('./devices/insight');
 var WemoMotion = require('./devices/motion');
 var WemoSwitch = require('./devices/switch');
+var WemoMaker = require('./devices/maker');
 
 var WemoScout = module.exports = function() {
   Scout.call(this);
@@ -71,6 +72,9 @@ WemoScout.prototype.foundDevice = function(device) {
       break;
     case Wemo.DEVICE_TYPE.Switch:
       this.initDevice('wemo-switch', WemoSwitch, device, client);
+      break;
+    case Wemo.DEVICE_TYPE.Maker:
+      this.initDevice('wemo-maker', WemoMaker, device, client);
       break;
     default:
       this.server.info('Found unsupported Wemo device: ' + device.deviceType, device);

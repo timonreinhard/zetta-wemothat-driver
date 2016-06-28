@@ -8,7 +8,7 @@ Extended Wemo driver for [Zetta](http://www.zettajs.org) that provides broader m
   * [x] Wemo Insight Switch
   * [x] Wemo Switch
   * [x] Wemo Motion
-  * [ ] Wemo Maker
+  * [x] Wemo Maker
   * [ ] Osram Lightify TW
   * [x] Osram Flex RGBW
   * [ ] Osram Gardenspot RGB

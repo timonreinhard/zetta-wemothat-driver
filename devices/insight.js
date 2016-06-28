@@ -50,11 +50,15 @@ WemoInsight.prototype._insightParamsHandler = function(val, power) {
 };
 
 WemoInsight.prototype.turnOn = function(cb) {
-  this._client.setBinaryState(1);
-  cb();
+  this._client.setBinaryState(1, function(err) {
+    if (!err) this.state = 'on';
+    cb();
+  }.bind(this));
 };
 
 WemoInsight.prototype.turnOff = function(cb) {
-  this._client.setBinaryState(0);
-  cb();
+  this._client.setBinaryState(0, function(err) {
+    if (!err) this.state = 'off';
+    cb();
+  }.bind(this));
 };

@@ -1,14 +1,13 @@
-var util = require('util');
-var Device = require('zetta-device');
-var WemoLight = require('./light');
+var util = require('util')
+var WemoLight = require('./light')
 
-var WemoColorLight = module.exports = function(device, client) {
-  WemoLight.apply(this, arguments);
-};
-util.inherits(WemoColorLight, WemoLight);
+var WemoColorLight = module.exports = function (device, client) {
+  WemoLight.apply(this, arguments)
+}
+util.inherits(WemoColorLight, WemoLight)
 
-WemoColorLight.prototype.init = function(config) {
-  WemoLight.prototype.init.call(this, config);
+WemoColorLight.prototype.init = function (config) {
+  WemoLight.prototype.init.call(this, config)
   config
     .type('wemo-color-light')
     .when('off', {allow: ['turn-on', 'dim', 'set-color']})
@@ -17,10 +16,10 @@ WemoColorLight.prototype.init = function(config) {
       {name: 'red', type: 'number'},
       {name: 'green', type: 'number'},
       {name: 'blue', type: 'number'}
-    ]);
-};
+    ])
+}
 
-WemoLight.prototype.setColor = function(red, green, blue, cb) {
-  this._client.setLightColor(this.deviceId, red, green, blue);
-  cb();
-};
+WemoLight.prototype.setColor = function (red, green, blue, cb) {
+  this._client.setLightColor(this.deviceId, red, green, blue)
+  cb()
+}

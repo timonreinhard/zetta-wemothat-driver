@@ -15,13 +15,13 @@ Extended Wemo driver for [Zetta](http://www.zettajs.org) that provides broader m
 
 ## Install
 
-```
+```bash
 $ npm install zetta-wemothat-driver
 ```
 
 ## Usage
 
-```
+```javascript
 var zetta = require('zetta');
 var Wemo = require('zetta-wemothat-driver');
 
